@@ -7,16 +7,45 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Node / Frontend dependencies & build outputs
+node_modules/
+dist/
+dist-ssr/
 *.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/**/.env
+
+# Java & Maven build outputs (Backend)
+target/
+**/target/
+build/
+**/build/
+.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# IDE & Editor directories and files
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.factorypath
+.sts4-cache
+.apt_generated
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
