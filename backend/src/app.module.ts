@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller.js';
+import { AuthModule } from './auth/auth.module.js';
 // import { GreetController } from './greet.controller.js';
 // import { GreetService } from './greet.service.js';
 
@@ -24,6 +25,7 @@ import { AppController } from './app.controller.js';
         },
       }),
     }),
+    AuthModule,
   ],
   controllers: [AppController], // <-- Add AppController here
   // providers: [],
