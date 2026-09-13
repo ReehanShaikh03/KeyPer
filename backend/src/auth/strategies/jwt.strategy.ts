@@ -1,0 +1,49 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../user.entity.js';
+
+export interface JwtPayload {
+    sub: string;
+    email: string;
+}
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+    constructor(
+        private readonly configService: ConfigService,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
+    ) {
+        const jwtSecret = configService.get<string>('JWT_SECRET');
+
+        if (!jwtSecret) {
+            throw new Error('JWT_SECRET is not defined in environment variables');
+        }
+
+        super({
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            ignoreExpiration: false,
+            secretOrKey: jwtSecret,
+        });
+    }
+
+    async validate(payload: JwtPayload) {
+        const user = await this.userRepository.findOne({
+            where: { id: payload.sub },
+        });
+
+        if (!user) {
+            throw new UnauthorizedException('Invalid token or user does not exist.');
+        }
+
+        return {
+            id: user.id,
+            email: user.email,
+            isTwoFactorEnabled: user.isTwoFactorEnabled,
+        };
+    }
+}
