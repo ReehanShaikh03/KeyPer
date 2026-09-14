@@ -23,6 +23,13 @@ export class User {
     @Column({ default: false })
     isTwoFactorEnabled: boolean;
 
+    // New columns for Brevo Email 2FA OTP
+    @Column({ type: 'varchar', nullable: true })
+    twoFactorOtpHash: string | null;
+
+    @Column({ type: 'timestamp', nullable: true })
+    twoFactorOtpExpiresAt: Date | null;
+
     @CreateDateColumn()
     createdAt: Date;
 
