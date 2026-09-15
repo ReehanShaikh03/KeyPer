@@ -15,6 +15,11 @@ import { VerifyOtpDto } from './dto/verify-otp.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { PreLoginDto } from './dto/pre-login.dto.js';
+import {
+    RequestResetDto,
+    ResetPasswordDto,
+    RedeemRecoveryCodeDto,
+} from './dto/recovery.dto.js';
 
 @Controller('auth')
 export class AuthController {
@@ -64,5 +69,22 @@ export class AuthController {
     disable2FA(@Req() req: express.Request) {
         const user = req.user as { id: string };
         return this.authService.disable2FA(user.id);
+    }
+    @Post('recovery/request')
+    @HttpCode(HttpStatus.OK)
+    requestReset(@Body() dto: RequestResetDto) {
+        return this.authService.requestPasswordReset(dto);
+    }
+
+    @Post('recovery/reset')
+    @HttpCode(HttpStatus.OK)
+    resetPassword(@Body() dto: ResetPasswordDto) {
+        return this.authService.resetPassword(dto);
+    }
+
+    @Post('recovery/redeem-code')
+    @HttpCode(HttpStatus.OK)
+    redeemRecoveryCode(@Body() dto: RedeemRecoveryCodeDto) {
+        return this.authService.redeemRecoveryCode(dto);
     }
 }
