@@ -7,6 +7,7 @@ import { User } from './user.entity.js';
 import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
+import { EmailModule } from '../email/email.module.js';
 
 @Module({
     imports: [
@@ -15,20 +16,14 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
         JwtModule.registerAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
-            useFactory: (configService: ConfigService) => {
-                const secret = configService.get<string>('JWT_SECRET');
-                if (!secret) {
-                    throw new Error('JWT_SECRET environment variable is missing');
-                }
-
-                return {
-                    secret,
-                    signOptions: {
-                        expiresIn: (configService.get<string>('JWT_EXPIRES_IN') ?? '15m') as any,
-                    },
-                };
-            },
+            useFactory: (configService: ConfigService) => ({
+                secret: configService.get<string>('JWT_SECRET'),
+                signOptions: {
+                    expiresIn: (configService.get<string>('JWT_EXPIRES_IN') ?? '15m') as any,
+                },
+            }),
         }),
+        EmailModule, // <-- Injected here
     ],
     controllers: [AuthController],
     providers: [AuthService, JwtStrategy],
