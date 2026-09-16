@@ -8,10 +8,16 @@ import { InteractivePlayground } from './components/InteractivePlayground';
 import { SecurityWhitepaperSection } from './components/SecurityWhitepaperSection';
 import { CtaFooterSection } from './components/CtaFooterSection';
 import { AuthModal } from './components/AuthModal';
+import { VaultPage } from '@/features/vault/pages/VaultPage';
 
 export const App: React.FC = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');
+  const [currentView] = useState<'landing' | 'vault'>('vault');
+
+  if (currentView === 'vault') {
+    return <VaultPage />;
+  }
 
   const handleOpenAuth = (mode: 'signin' | 'signup') => {
     setAuthMode(mode);
