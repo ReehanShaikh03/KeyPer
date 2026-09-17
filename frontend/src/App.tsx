@@ -9,9 +9,16 @@ import { SecurityWhitepaperSection } from './components/SecurityWhitepaperSectio
 import { CtaFooterSection } from './components/CtaFooterSection';
 import { AuthModal } from './components/AuthModal';
 
+import { GeneratorPage } from '@/features/generator/pages/GeneratorPage';
+
 export const App: React.FC = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');
+  const [currentView] = useState<'landing' | 'vault' | 'generator'>('generator');
+
+  if (currentView === 'generator') {
+    return <GeneratorPage />;
+  }
 
   const handleOpenAuth = (mode: 'signin' | 'signup') => {
     setAuthMode(mode);
