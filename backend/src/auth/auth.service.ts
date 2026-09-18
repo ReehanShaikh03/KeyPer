@@ -17,6 +17,8 @@ import { LoginDto } from './dto/login.dto.js';
 import { PreLoginDto } from './dto/pre-login.dto.js';
 import { RequestResetDto, ResetPasswordDto, RedeemRecoveryCodeDto } from './dto/recovery.dto.js';
 import { ConfigService } from '@nestjs/config';
+import { AuditService } from '../audit/audit.service.js';
+import { AuditAction } from '../audit/audit-log.entity.js';
 @Injectable()
 export class AuthService {
     constructor(
@@ -25,6 +27,7 @@ export class AuthService {
         private readonly jwtService: JwtService,
         private readonly emailService: EmailService,
         private readonly configService: ConfigService,
+        private readonly auditService: AuditService,
     ) { }
 
     private hashData(data: string): string {
@@ -180,13 +183,11 @@ export class AuthService {
 
         return { authSalt: user.authSalt };
     }
+    // backend/src/auth/auth.service.ts (snippet)
 
-    async login(loginDto: LoginDto) {
+    async login(loginDto: LoginDto, ipAddress?: string, userAgent?: string) {
         const { email, password } = loginDto;
-
-        const user = await this.userRepository.findOne({
-            where: { email },
-        });
+        const user = await this.userRepository.findOne({ where: { email } });
 
         if (!user) {
             throw new UnauthorizedException('Invalid credentials.');
@@ -194,8 +195,25 @@ export class AuthService {
 
         const isMatch = await argon2.verify(user.authHash, password);
         if (!isMatch) {
+            // Record login failure
+            await this.auditService.record({
+                userId: user.id,
+                action: AuditAction.LOGIN_FAILURE,
+                ipAddress,
+                userAgent,
+                metadata: { reason: 'Bad password' },
+            });
             throw new UnauthorizedException('Invalid credentials.');
         }
+
+        // Record login success
+        await this.auditService.record({
+            userId: user.id,
+            action: AuditAction.LOGIN_SUCCESS,
+            ipAddress,
+            userAgent,
+            metadata: { email: user.email },
+        });
 
         const payload = { sub: user.id, email: user.email };
         const accessToken = this.jwtService.sign(payload);

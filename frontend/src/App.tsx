@@ -10,6 +10,8 @@ import { CtaFooterSection } from './components/CtaFooterSection';
 import { AuthModal } from './components/AuthModal';
 import { VaultPage } from '@/features/vault/pages/VaultPage';
 
+import { GeneratorPage } from '@/features/generator/pages/GeneratorPage';
+
 export const App: React.FC = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');

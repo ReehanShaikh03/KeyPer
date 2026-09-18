@@ -8,6 +8,7 @@ import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 import { EmailModule } from '../email/email.module.js';
+import { AuditModule } from '../audit/audit.module.js';
 
 @Module({
     imports: [
@@ -23,7 +24,8 @@ import { EmailModule } from '../email/email.module.js';
                 },
             }),
         }),
-        EmailModule, // <-- Injected here
+        EmailModule,
+        AuditModule,
     ],
     controllers: [AuthController],
     providers: [AuthService, JwtStrategy],

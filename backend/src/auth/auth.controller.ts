@@ -35,11 +35,14 @@ export class AuthController {
     getPreLoginSalt(@Body() preLoginDto: PreLoginDto) {
         return this.authService.getPreLoginSalt(preLoginDto);
     }
-
     @Post('login')
     @HttpCode(HttpStatus.OK)
-    login(@Body() loginDto: LoginDto) {
-        return this.authService.login(loginDto);
+    login(@Req() req: express.Request, @Body() loginDto: LoginDto) {
+        return this.authService.login(
+            loginDto,
+            req.ip,
+            req.headers['user-agent'] as string,
+        );
     }
 
     @UseGuards(JwtAuthGuard)
