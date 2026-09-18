@@ -49,6 +49,9 @@ export class AuditLog {
     metadata: Record<string, any> | null;
 
     @Index()
-    @CreateDateColumn()
+    @CreateDateColumn({
+        type: 'timestamptz',
+        default: () => 'CURRENT_TIMESTAMP',
+    })
     createdAt: Date;
 }
