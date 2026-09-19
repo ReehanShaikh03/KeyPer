@@ -15,6 +15,7 @@ import { VerifyOtpDto } from './dto/verify-otp.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { PreLoginDto } from './dto/pre-login.dto.js';
+import { Throttle } from '@nestjs/throttler';
 import {
     RequestResetDto,
     ResetPasswordDto,
@@ -35,6 +36,7 @@ export class AuthController {
     getPreLoginSalt(@Body() preLoginDto: PreLoginDto) {
         return this.authService.getPreLoginSalt(preLoginDto);
     }
+    @Throttle({ long: { limit: 5, ttl: 60000 } })
     @Post('login')
     @HttpCode(HttpStatus.OK)
     login(@Req() req: express.Request, @Body() loginDto: LoginDto) {
@@ -51,6 +53,7 @@ export class AuthController {
         return req.user;
     }
     @UseGuards(JwtAuthGuard)
+    @Throttle({ long: { limit: 3, ttl: 60000 } })
     @Post('2fa/request-otp')
     @HttpCode(HttpStatus.OK)
     requestOtp(@Req() req: express.Request) {
@@ -59,6 +62,7 @@ export class AuthController {
     }
 
     @UseGuards(JwtAuthGuard)
+    @Throttle({ long: { limit: 5, ttl: 60000 } })
     @Post('2fa/verify-otp')
     @HttpCode(HttpStatus.OK)
     verifyOtp(@Req() req: express.Request, @Body() verifyOtpDto: VerifyOtpDto) {
