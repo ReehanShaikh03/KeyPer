@@ -14,7 +14,7 @@ async function bootstrap() {
   // 2. Strict CORS Configuration
   const allowedOrigins = [
     'http://localhost:5173',
-    process.env.FRONTEND_URL,
+    'https://key-per-flax.vercel.app/',
   ].filter(Boolean) as string[];
 
   app.enableCors({
