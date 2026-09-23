@@ -31,8 +31,8 @@ export class VaultEntry {
     @Column({ type: 'text' })
     ciphertext: string;
 
-    // Optional unencrypted category/tag for server-side organization
-    @Column({ type: 'varchar', length: 50, default: 'General' })
+    // Optional unencrypted category/tag for server-side organization and folder matching
+    @Column({ type: 'varchar', length: 100, default: 'General' })
     category: string;
 
     // Optional unencrypted site label for rapid UI listing/filtering

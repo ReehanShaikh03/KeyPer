@@ -90,7 +90,7 @@ export const HowItWorks: React.FC = () => {
           {steps.map((item, idx) => (
             <div
               key={idx}
-              ref={(el) => (cardsRef.current[idx] = el)}
+              ref={(el) => { cardsRef.current[idx] = el; }}
               className="glass-bento"
               style={{
                 padding: '30px 26px',

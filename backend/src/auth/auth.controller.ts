@@ -70,6 +70,38 @@ export class AuthController {
         return this.authService.verifyEmailOtp(user.id, verifyOtpDto.code);
     }
 
+    @Throttle({ long: { limit: 5, ttl: 60000 } })
+    @Post('2fa/verify-login-otp')
+    @HttpCode(HttpStatus.OK)
+    verifyLoginOtp(
+        @Req() req: express.Request,
+        @Body() body: { code: string; tempToken?: string },
+    ) {
+        const authHeader = req.headers['authorization'];
+        const tempToken = body.tempToken || (authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : undefined);
+        return this.authService.verifyLoginOtp(body.code, tempToken);
+    }
+
+    @Throttle({ long: { limit: 3, ttl: 60000 } })
+    @Post('2fa/resend-otp')
+    @HttpCode(HttpStatus.OK)
+    resendLoginOtp(
+        @Req() req: express.Request,
+        @Body() body: { tempToken?: string },
+    ) {
+        const authHeader = req.headers['authorization'];
+        const tempToken = body.tempToken || (authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : undefined);
+        return this.authService.resendLoginOtp(tempToken);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('2fa/enable')
+    @HttpCode(HttpStatus.OK)
+    enable2FA(@Req() req: express.Request) {
+        const user = req.user as { id: string };
+        return this.authService.enable2FA(user.id);
+    }
+
     @UseGuards(JwtAuthGuard)
     @Post('2fa/disable')
     @HttpCode(HttpStatus.OK)
@@ -93,5 +125,13 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     redeemRecoveryCode(@Body() dto: RedeemRecoveryCodeDto) {
         return this.authService.redeemRecoveryCode(dto);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('change-master-password')
+    @HttpCode(HttpStatus.OK)
+    changeMasterPassword(@Req() req: express.Request, @Body() body: { currentPassword?: string; newPassword?: string; newAuthSalt?: string }) {
+        const user = req.user as { id: string };
+        return this.authService.changeMasterPassword(user.id, body.currentPassword || '', body.newPassword || '', body.newAuthSalt);
     }
 }

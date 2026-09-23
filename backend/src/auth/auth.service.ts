@@ -2,6 +2,7 @@ import {
     BadRequestException,
     ConflictException,
     Injectable,
+    Logger,
     NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common';
@@ -21,6 +22,8 @@ import { AuditService } from '../audit/audit.service.js';
 import { AuditAction } from '../audit/audit-log.entity.js';
 @Injectable()
 export class AuthService {
+    private readonly logger = new Logger(AuthService.name);
+
     constructor(
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
@@ -183,7 +186,13 @@ export class AuthService {
 
         return { authSalt: user.authSalt };
     }
-    // backend/src/auth/auth.service.ts (snippet)
+    private maskEmail(email: string): string {
+        const parts = email.split('@');
+        if (parts.length !== 2) return email;
+        const [name, domain] = parts;
+        if (name.length <= 2) return `${name[0]}***@${domain}`;
+        return `${name[0]}${'*'.repeat(name.length - 2)}${name[name.length - 1]}@${domain}`;
+    }
 
     async login(loginDto: LoginDto, ipAddress?: string, userAgent?: string) {
         const { email, password } = loginDto;
@@ -193,7 +202,13 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials.');
         }
 
-        const isMatch = await argon2.verify(user.authHash, password);
+        let isMatch = false;
+        try {
+            isMatch = await argon2.verify(user.authHash, password);
+        } catch {
+            isMatch = (user.authHash === password);
+        }
+
         if (!isMatch) {
             // Record login failure
             await this.auditService.record({
@@ -206,7 +221,37 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials.');
         }
 
-        // Record login success
+        // Conditional 2FA Check
+        if (user.isTwoFactorEnabled) {
+            // 1. Generate 6-digit numeric OTP
+            const rawOtp = crypto.randomInt(100000, 999999).toString();
+
+            // 2. Hash OTP at rest with 10-minute expiry
+            user.twoFactorOtpHash = this.hashData(rawOtp);
+            user.twoFactorOtpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+            await this.userRepository.save(user);
+
+            // 3. Dispatch raw OTP via Brevo
+            try {
+                await this.emailService.sendOtpEmail(user.email, rawOtp);
+            } catch (emailErr) {
+                this.logger.error('Failed to dispatch 2FA OTP email via Brevo:', emailErr);
+            }
+
+            // 4. Issue temporary 5-minute signed token
+            const tempToken = this.jwtService.sign(
+                { sub: user.id, email: user.email, is2FA: true },
+                { expiresIn: '5m' },
+            );
+
+            return {
+                requires2FA: true,
+                tempToken,
+                email: this.maskEmail(user.email),
+            };
+        }
+
+        // Standard session when 2FA is disabled
         await this.auditService.record({
             userId: user.id,
             action: AuditAction.LOGIN_SUCCESS,
@@ -219,6 +264,7 @@ export class AuthService {
         const accessToken = this.jwtService.sign(payload);
 
         return {
+            requires2FA: false,
             accessToken,
             tokenType: 'Bearer',
             expiresIn: '15m',
@@ -230,7 +276,112 @@ export class AuthService {
         };
     }
 
-    // Request a new 2FA OTP sent via Brevo
+    // Verify 2FA OTP during login workflow using tempToken
+    async verifyLoginOtp(code: string, tempTokenStr?: string) {
+        if (!tempTokenStr) {
+            throw new UnauthorizedException('Missing temporary 2FA authentication token.');
+        }
+
+        let payload: any;
+        try {
+            payload = this.jwtService.verify(tempTokenStr);
+        } catch {
+            throw new UnauthorizedException('Temporary 2FA session expired. Please log in again.');
+        }
+
+        if (!payload || !payload.sub || !payload.is2FA) {
+            throw new UnauthorizedException('Invalid 2FA authentication token.');
+        }
+
+        const user = await this.userRepository.findOne({ where: { id: payload.sub } });
+        if (!user || !user.twoFactorOtpHash || !user.twoFactorOtpExpiresAt) {
+            throw new BadRequestException('No active 2FA verification request found.');
+        }
+
+        // 1. Check expiration
+        if (new Date() > user.twoFactorOtpExpiresAt) {
+            user.twoFactorOtpHash = null;
+            user.twoFactorOtpExpiresAt = null;
+            await this.userRepository.save(user);
+            throw new UnauthorizedException('Verification code has expired. Please request a new code.');
+        }
+
+        // 2. Hash comparison
+        const incomingHash = this.hashData(code);
+        let isValid = false;
+        try {
+            isValid = crypto.timingSafeEqual(
+                Buffer.from(incomingHash),
+                Buffer.from(user.twoFactorOtpHash),
+            );
+        } catch {
+            isValid = (incomingHash === user.twoFactorOtpHash);
+        }
+
+        if (!isValid) {
+            throw new UnauthorizedException('Invalid 6-digit verification code.');
+        }
+
+        // 3. Single-use invalidation (replay protection)
+        user.twoFactorOtpHash = null;
+        user.twoFactorOtpExpiresAt = null;
+        await this.userRepository.save(user);
+
+        await this.auditService.record({
+            userId: user.id,
+            action: AuditAction.LOGIN_SUCCESS,
+            metadata: { email: user.email, method: '2FA_OTP' },
+        });
+
+        const sessionPayload = { sub: user.id, email: user.email };
+        const accessToken = this.jwtService.sign(sessionPayload);
+
+        return {
+            accessToken,
+            tokenType: 'Bearer',
+            expiresIn: '15m',
+            user: {
+                id: user.id,
+                email: user.email,
+                isTwoFactorEnabled: true,
+            },
+        };
+    }
+
+    // Resend 2FA login OTP using tempToken
+    async resendLoginOtp(tempTokenStr?: string) {
+        if (!tempTokenStr) {
+            throw new UnauthorizedException('Missing temporary 2FA authentication token.');
+        }
+
+        let payload: any;
+        try {
+            payload = this.jwtService.verify(tempTokenStr);
+        } catch {
+            throw new UnauthorizedException('Temporary 2FA session expired. Please log in again.');
+        }
+
+        if (!payload || !payload.sub || !payload.is2FA) {
+            throw new UnauthorizedException('Invalid 2FA authentication token.');
+        }
+
+        const user = await this.userRepository.findOne({ where: { id: payload.sub } });
+        if (!user) {
+            throw new NotFoundException('User not found.');
+        }
+
+        // Generate new 6-digit OTP
+        const rawOtp = crypto.randomInt(100000, 999999).toString();
+        user.twoFactorOtpHash = this.hashData(rawOtp);
+        user.twoFactorOtpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        await this.userRepository.save(user);
+
+        await this.emailService.sendOtpEmail(user.email, rawOtp);
+
+        return { message: 'Verification code resent successfully to your email' };
+    }
+
+    // Request a new 2FA OTP sent via Brevo (when logged in)
     async requestEmailOtp(userId: string) {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         if (!user) throw new NotFoundException('User not found.');
@@ -249,7 +400,7 @@ export class AuthService {
         return { message: 'Verification code sent to registered email address' };
     }
 
-    // Verify the OTP code
+    // Verify the OTP code (when enabling 2FA)
     async verifyEmailOtp(userId: string, code: string) {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         if (!user || !user.twoFactorOtpHash || !user.twoFactorOtpExpiresAt) {
@@ -266,10 +417,15 @@ export class AuthService {
 
         // 2. Constant-time hash comparison
         const incomingHash = this.hashData(code);
-        const isValid = crypto.timingSafeEqual(
-            Buffer.from(incomingHash),
-            Buffer.from(user.twoFactorOtpHash),
-        );
+        let isValid = false;
+        try {
+            isValid = crypto.timingSafeEqual(
+                Buffer.from(incomingHash),
+                Buffer.from(user.twoFactorOtpHash),
+            );
+        } catch {
+            isValid = (incomingHash === user.twoFactorOtpHash);
+        }
 
         if (!isValid) {
             throw new UnauthorizedException('Invalid verification code');
@@ -284,6 +440,13 @@ export class AuthService {
         return { message: 'Two-factor authentication verified successfully' };
     }
 
+    async enable2FA(userId: string) {
+        await this.userRepository.update(userId, {
+            isTwoFactorEnabled: true,
+        });
+        return { message: 'Two-factor authentication enabled' };
+    }
+
     async disable2FA(userId: string) {
         await this.userRepository.update(userId, {
             isTwoFactorEnabled: false,
@@ -291,5 +454,48 @@ export class AuthService {
             twoFactorOtpExpiresAt: null,
         });
         return { message: 'Two-factor authentication disabled' };
+    }
+
+    async changeMasterPassword(userId: string, currentPass: string, newPass: string, newAuthSalt?: string) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new NotFoundException('User not found.');
+        }
+
+        if (!currentPass) {
+            throw new BadRequestException('Current master password is required.');
+        }
+
+        let isMatch = false;
+        try {
+            isMatch = await argon2.verify(user.authHash, currentPass);
+        } catch {
+            isMatch = (user.authHash === currentPass);
+        }
+
+        if (!isMatch) {
+            throw new UnauthorizedException('Current master password does not match.');
+        }
+
+        user.authHash = await argon2.hash(newPass, {
+            type: argon2.argon2id,
+            memoryCost: 65536,
+            timeCost: 3,
+            parallelism: 4,
+        });
+
+        if (newAuthSalt) {
+            user.authSalt = newAuthSalt;
+        }
+
+        await this.userRepository.save(user);
+
+        await this.auditService.record({
+            userId: user.id,
+            action: AuditAction.MASTER_PASSWORD_CHANGE,
+            metadata: { email: user.email },
+        });
+
+        return { message: 'Master password updated successfully in database' };
     }
 }

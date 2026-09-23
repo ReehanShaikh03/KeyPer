@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
   Lock,
@@ -15,8 +16,16 @@ import { VaultItemList } from '../components/VaultItemList';
 import { VaultDetail } from '../components/VaultDetail';
 import { AddEditEntryModal } from '../components/AddEditEntryModal';
 import { MasterPasswordModal } from '../components/MasterPasswordModal';
+import { SecurityPage } from '@/features/security/pages/SecurityPage';
+import { SettingsPage } from '@/features/settings/pages/SettingsPage';
+import { GeneratorPage } from '@/features/generator/pages/GeneratorPage';
+import { AuditPage } from '@/features/audit/pages/AuditPage';
 
-export const VaultPage: React.FC = () => {
+interface VaultPageProps {
+  onLogout?: () => void;
+}
+
+export const VaultPage: React.FC<VaultPageProps> = ({ onLogout }) => {
   const {
     isUnlocked,
     unlockVault,
@@ -24,6 +33,8 @@ export const VaultPage: React.FC = () => {
     entries,
     selectedEntry,
     setSelectedEntryId,
+    folders,
+    addFolder,
     activeFolder,
     setActiveFolder,
     searchQuery,
@@ -31,13 +42,16 @@ export const VaultPage: React.FC = () => {
     sortBy,
     setSortBy,
     folderCounts,
+    isLoading,
     isModalOpen,
     setIsModalOpen,
     editingEntry,
     setEditingEntry,
     saveEntry,
+    moveEntryToFolder,
     deleteEntry,
     calculateStrength,
+    reloadVault,
   } = useVault();
 
   const [activeTab, setActiveTab] = useState('Vault');
@@ -71,16 +85,18 @@ export const VaultPage: React.FC = () => {
         <div className="flex items-center gap-3">
           {isUnlocked ? (
             <button
-              onClick={lockVault}
-              className="bg-emerald-950/40 border border-emerald-600/40 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 hover:bg-emerald-900/40 transition-colors cursor-pointer"
-              title="Click to lock vault"
+              onClick={() => {
+                lockVault();
+              }}
+              className="bg-emerald-950/40 border border-emerald-600/40 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 hover:bg-rose-900/40 hover:text-rose-400 hover:border-rose-600/40 transition-colors cursor-pointer"
+              title="Click to lock vault and require Master Password"
             >
               <Unlock className="w-3.5 h-3.5" />
-              <span>Unlocked</span>
+              <span>Unlocked (Lock)</span>
             </button>
           ) : (
             <button
-              onClick={() => unlockVault('default_master_password')}
+              onClick={() => lockVault()}
               className="bg-rose-950/40 border border-rose-600/40 text-rose-400 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 hover:bg-rose-900/40 transition-colors cursor-pointer"
             >
               <Lock className="w-3.5 h-3.5" />
@@ -108,13 +124,20 @@ export const VaultPage: React.FC = () => {
                 <button
                   key={nav.name}
                   onClick={() => setActiveTab(nav.name)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${isActive
-                      ? 'bg-[#1F232D] text-white shadow-xs border border-slate-700/50'
+                  className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-colors cursor-pointer ${isActive
+                      ? 'text-white font-semibold'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-[#151820]'
                     }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
-                  <span>{nav.name}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeNavSectionHighlight"
+                      className="absolute inset-0 bg-[#1F232D] border border-slate-700/60 rounded-xl shadow-xs"
+                      transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                    />
+                  )}
+                  <Icon className={`w-4 h-4 relative z-10 transition-colors ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
+                  <span className="relative z-10">{nav.name}</span>
                 </button>
               );
             })}
@@ -128,38 +151,77 @@ export const VaultPage: React.FC = () => {
           </div>
         </aside>
 
-        {/* Folders Column */}
-        <VaultSidebar
-          activeFolder={activeFolder}
-          setActiveFolder={setActiveFolder}
-          folderCounts={folderCounts}
-        />
+        {/* Main Content Pane with Smooth Page Transition */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8, scale: 0.995 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.995 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="flex-1 flex overflow-hidden w-full h-full"
+          >
+            {activeTab === 'Security' ? (
+              <SecurityPage
+                onNavigateToVault={(entryId) => {
+                  setSelectedEntryId(entryId);
+                  setActiveTab('Vault');
+                }}
+              />
+            ) : activeTab === 'Settings' ? (
+              <SettingsPage onLogout={onLogout} />
+            ) : activeTab === 'Generator' ? (
+              <GeneratorPage />
+            ) : activeTab === 'Audit log' ? (
+              <AuditPage />
+            ) : (
+              <>
+                {/* Folders Column */}
+                <VaultSidebar
+                  folders={folders}
+                  activeFolder={activeFolder}
+                  setActiveFolder={setActiveFolder}
+                  onAddFolder={addFolder}
+                  onMoveEntryToFolder={moveEntryToFolder}
+                  folderCounts={folderCounts}
+                />
 
-        {/* Middle Item List Column */}
-        <VaultItemList
-          entries={entries}
-          selectedEntryId={selectedEntry?.id || null}
-          onSelectEntry={(id) => setSelectedEntryId(id)}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          onAddNew={handleAddNew}
-        />
+                {/* Middle Item List Column */}
+                <VaultItemList
+                  entries={entries}
+                  selectedEntryId={selectedEntry?.id || null}
+                  onSelectEntry={(id) => setSelectedEntryId(id)}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  onAddNew={handleAddNew}
+                  isLoading={isLoading}
+                />
 
-        {/* Right Detail Pane */}
-        <VaultDetail
-          entry={selectedEntry}
-          onEdit={(entry) => handleEdit(entry)}
-          onDelete={deleteEntry}
-          calculateStrength={calculateStrength}
-        />
+                {/* Right Detail Pane */}
+                <VaultDetail
+                  entry={selectedEntry}
+                  onEdit={(entry) => handleEdit(entry)}
+                  onDelete={deleteEntry}
+                  calculateStrength={calculateStrength}
+                />
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Modals */}
       <MasterPasswordModal
         isOpen={!isUnlocked}
-        onUnlock={async (pw) => unlockVault(pw)}
+        onUnlock={async (pw) => {
+          const ok = await unlockVault(pw);
+          if (ok) {
+            await reloadVault();
+          }
+          return ok;
+        }}
       />
 
       <AddEditEntryModal
@@ -168,6 +230,8 @@ export const VaultPage: React.FC = () => {
         onSave={saveEntry}
         editingEntry={editingEntry}
         calculateStrength={calculateStrength}
+        folders={folders}
+        activeFolder={activeFolder}
       />
     </div>
   );

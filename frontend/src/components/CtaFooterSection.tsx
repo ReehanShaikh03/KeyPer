@@ -79,6 +79,29 @@ export const CtaFooterSection: React.FC<CtaFooterSectionProps> = ({ onOpenAuth }
                 Create your local encrypted KeyPer vault in under 60 seconds.
               </p>
 
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+                <button
+                  type="button"
+                  onClick={() => onOpenAuth('signup')}
+                  className="btn-primary"
+                  style={{
+                    padding: '14px 34px',
+                    borderRadius: '9999px',
+                    background: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    boxShadow: '0 0 25px rgba(168, 85, 247, 0.4)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  Create Vault Now
+                  <ArrowRight size={18} />
+                </button>
+              </div>
+
               {!submitted ? (
                 <form
                   onSubmit={handleWaitlist}

@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Copy,
   Check,
   RefreshCw,
-  ShieldCheck,
-  Zap,
   Lock,
   Key,
   Hash,
-  ChevronDown,
-  ChevronUp,
+  Sliders,
+  Bookmark,
 } from 'lucide-react';
 import { Slider } from '@/shared/components/ui/slider';
 import { Switch } from '@/shared/components/ui/switch';
 import { Button } from '@/shared/components/ui/button';
-import type { GeneratorOptions, PasswordStrengthResult, GeneratorMode } from '../types/generator.types';
+import { CustomSelect } from '@/shared/components/ui/CustomSelect';
+import type { GeneratorOptions, PasswordStrengthResult, GeneratorMode, GeneratorPresetDto } from '../types/generator.types';
 
 export interface GeneratorCardProps {
   password: string;
@@ -25,6 +24,7 @@ export interface GeneratorCardProps {
   onGenerate: () => void;
   onCopy: () => void;
   copied: boolean;
+  presets?: GeneratorPresetDto[];
   onOpenSavePreset?: () => void;
 }
 
@@ -38,10 +38,11 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
   onGenerate,
   onCopy,
   copied,
+  presets = [],
   onOpenSavePreset,
 }) => {
-  const [showAdvancedMetrics, setShowAdvancedMetrics] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
+  const [selectedPresetId, setSelectedPresetId] = useState<string>('custom');
 
   const handleRegenerate = () => {
     setIsRotating(true);
@@ -51,6 +52,57 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
 
   const getStrengthPercentage = () => {
     return Math.min(100, Math.max(10, (strength.score / 4) * 100));
+  };
+
+  const builtInPresetOptions = [
+    { value: 'custom', label: 'Custom configuration' },
+    { value: 'preset-strong', label: 'Strong Password (16 chars)' },
+    { value: 'preset-ultra', label: 'Ultra Secure (32 chars)' },
+    { value: 'preset-passphrase', label: 'Passphrase (4 words)' },
+    { value: 'preset-pin', label: 'PIN Code (6 digits)' },
+    ...presets.map((p) => ({ value: p.id, label: `Preset: ${p.name}` })),
+  ];
+
+  const handleSelectPreset = (val: string) => {
+    setSelectedPresetId(val);
+    if (val === 'preset-strong') {
+      onChangeOptions({
+        mode: 'password',
+        length: 16,
+        uppercase: true,
+        lowercase: true,
+        numbers: true,
+        symbols: true,
+        excludeAmbiguous: false,
+      });
+    } else if (val === 'preset-ultra') {
+      onChangeOptions({
+        mode: 'password',
+        length: 32,
+        uppercase: true,
+        lowercase: true,
+        numbers: true,
+        symbols: true,
+        excludeAmbiguous: false,
+      });
+    } else if (val === 'preset-passphrase') {
+      onChangeOptions({
+        mode: 'passphrase',
+        wordCount: 4,
+        capitalizeWords: true,
+        includeNumberInPassphrase: true,
+      });
+    } else if (val === 'preset-pin') {
+      onChangeOptions({
+        mode: 'pin',
+        length: 6,
+      });
+    } else {
+      const userPreset = presets.find((p) => p.id === val);
+      if (userPreset) {
+        onChangeOptions(userPreset.options);
+      }
+    }
   };
 
   return (
@@ -72,6 +124,35 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
         transition={{ duration: 0.35, ease: customEasing }}
         className="bg-[#1A1D24] border border-slate-800/80 rounded-2xl p-6 md:p-7 shadow-2xl shadow-black/40 space-y-6"
       >
+        {/* Preset Selector & Action Row */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#14171F] p-3 rounded-2xl border border-slate-800/80">
+          <div className="flex items-center gap-2 flex-1 min-w-[220px]">
+            <Sliders className="w-4 h-4 text-indigo-400 shrink-0" />
+            <div className="flex-1">
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Select Preset</label>
+              <CustomSelect
+                value={selectedPresetId}
+                onChange={handleSelectPreset}
+                options={builtInPresetOptions}
+                ariaLabel="Select password generator preset"
+                className="bg-[#181B24] border-slate-800 text-xs py-1.5"
+              />
+            </div>
+          </div>
+
+          {onOpenSavePreset && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onOpenSavePreset}
+              className="text-xs h-9 px-3.5 border-slate-700/80 hover:bg-slate-800 text-slate-200 flex items-center gap-1.5 shrink-0 self-end sm:self-auto cursor-pointer"
+            >
+              <Bookmark className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Save Preset</span>
+            </Button>
+          )}
+        </div>
+
         {/* Mode Selector Tabs (Password / Passphrase / PIN) */}
         <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
           <div className="flex items-center gap-1.5 bg-[#14171F] p-1 rounded-xl border border-slate-800/60 w-full sm:w-auto">
@@ -88,7 +169,10 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
                 <button
                   key={item.mode}
                   type="button"
-                  onClick={() => onChangeOptions({ mode: item.mode as GeneratorMode })}
+                  onClick={() => {
+                    setSelectedPresetId('custom');
+                    onChangeOptions({ mode: item.mode as GeneratorMode });
+                  }}
                   className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer ${
                     isActive
                       ? 'bg-[#6366F1] text-white shadow-md shadow-indigo-950/40'
@@ -101,17 +185,6 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
               );
             })}
           </div>
-
-          {onOpenSavePreset && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onOpenSavePreset}
-              className="hidden sm:inline-flex text-xs h-8 px-3"
-            >
-              Save Preset
-            </Button>
-          )}
         </div>
 
         {/* Output Box Panel */}
@@ -199,7 +272,10 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
                   min={8}
                   max={64}
                   step={1}
-                  onChange={(val) => onChangeOptions({ length: val })}
+                  onChange={(val) => {
+                    setSelectedPresetId('custom');
+                    onChangeOptions({ length: val });
+                  }}
                   ariaLabel="Password length"
                 />
               </div>
@@ -211,7 +287,10 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
                   <Switch
                     ariaLabel="Toggle Uppercase characters"
                     checked={options.uppercase}
-                    onCheckedChange={(val) => onChangeOptions({ uppercase: val })}
+                    onCheckedChange={(val) => {
+                      setSelectedPresetId('custom');
+                      onChangeOptions({ uppercase: val });
+                    }}
                   />
                 </div>
 
@@ -220,7 +299,10 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
                   <Switch
                     ariaLabel="Toggle Lowercase characters"
                     checked={options.lowercase}
-                    onCheckedChange={(val) => onChangeOptions({ lowercase: val })}
+                    onCheckedChange={(val) => {
+                      setSelectedPresetId('custom');
+                      onChangeOptions({ lowercase: val });
+                    }}
                   />
                 </div>
 
@@ -229,7 +311,10 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
                   <Switch
                     ariaLabel="Toggle Numbers"
                     checked={options.numbers}
-                    onCheckedChange={(val) => onChangeOptions({ numbers: val })}
+                    onCheckedChange={(val) => {
+                      setSelectedPresetId('custom');
+                      onChangeOptions({ numbers: val });
+                    }}
                   />
                 </div>
 
@@ -238,7 +323,10 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
                   <Switch
                     ariaLabel="Toggle Symbols"
                     checked={options.symbols}
-                    onCheckedChange={(val) => onChangeOptions({ symbols: val })}
+                    onCheckedChange={(val) => {
+                      setSelectedPresetId('custom');
+                      onChangeOptions({ symbols: val });
+                    }}
                   />
                 </div>
 
@@ -247,7 +335,10 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
                   <Switch
                     ariaLabel="Toggle Exclude Ambiguous characters"
                     checked={options.excludeAmbiguous}
-                    onCheckedChange={(val) => onChangeOptions({ excludeAmbiguous: val })}
+                    onCheckedChange={(val) => {
+                      setSelectedPresetId('custom');
+                      onChangeOptions({ excludeAmbiguous: val });
+                    }}
                   />
                 </div>
               </div>
@@ -272,7 +363,10 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
                   min={3}
                   max={10}
                   step={1}
-                  onChange={(val) => onChangeOptions({ wordCount: val })}
+                  onChange={(val) => {
+                    setSelectedPresetId('custom');
+                    onChangeOptions({ wordCount: val });
+                  }}
                   ariaLabel="Passphrase word count"
                 />
               </div>
@@ -284,7 +378,10 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
                   <Switch
                     ariaLabel="Capitalize words in passphrase"
                     checked={options.capitalizeWords ?? true}
-                    onCheckedChange={(val) => onChangeOptions({ capitalizeWords: val })}
+                    onCheckedChange={(val) => {
+                      setSelectedPresetId('custom');
+                      onChangeOptions({ capitalizeWords: val });
+                    }}
                   />
                 </div>
 
@@ -293,7 +390,10 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
                   <Switch
                     ariaLabel="Include number in passphrase"
                     checked={options.includeNumberInPassphrase ?? true}
-                    onCheckedChange={(val) => onChangeOptions({ includeNumberInPassphrase: val })}
+                    onCheckedChange={(val) => {
+                      setSelectedPresetId('custom');
+                      onChangeOptions({ includeNumberInPassphrase: val });
+                    }}
                   />
                 </div>
               </div>
@@ -318,57 +418,15 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
                   min={4}
                   max={12}
                   step={1}
-                  onChange={(val) => onChangeOptions({ length: val })}
+                  onChange={(val) => {
+                    setSelectedPresetId('custom');
+                    onChangeOptions({ length: val });
+                  }}
                   ariaLabel="PIN digit count"
                 />
               </div>
             </div>
           )}
-        </div>
-
-        {/* Collapsible Advanced Security Metrics */}
-        <div className="border-t border-slate-800/80 pt-4">
-          <button
-            type="button"
-            onClick={() => setShowAdvancedMetrics(!showAdvancedMetrics)}
-            className="flex items-center justify-between w-full text-xs text-slate-400 hover:text-slate-200 transition-colors py-1 cursor-pointer"
-          >
-            <span className="flex items-center gap-1.5 font-medium">
-              <Zap className="w-3.5 h-3.5 text-teal-400" />
-              Advanced Security & Entropy Metrics
-            </span>
-            {showAdvancedMetrics ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-
-          <AnimatePresence>
-            {showAdvancedMetrics && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.25, ease: customEasing }}
-                className="overflow-hidden"
-              >
-                <div className="mt-3 p-4 bg-[#14171F] rounded-xl border border-slate-800/80 space-y-3 text-xs">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <span className="text-slate-500 block text-[11px]">Entropy</span>
-                      <span className="font-mono font-bold text-teal-300 text-sm">{strength.entropyBits} bits</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[11px]">Est. Crack Time</span>
-                      <span className="font-mono font-bold text-indigo-300 text-sm">{strength.crackTimeDisplay}</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-800/60 flex items-center gap-2 text-slate-400">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Zero-Knowledge Guarantee: Password generated exclusively inside WebCrypto browser memory.</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </motion.div>
     </div>

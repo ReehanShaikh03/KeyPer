@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, AlertCircle, ChevronDown } from 'lucide-react';
+import { Search, Plus, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import type { DecryptedVaultEntry } from '../types/vault.types';
+import { CustomSelect } from '@/shared/components/ui/CustomSelect';
 
 interface VaultItemListProps {
   entries: DecryptedVaultEntry[];
@@ -12,9 +13,8 @@ interface VaultItemListProps {
   sortBy: string;
   setSortBy: (sort: string) => void;
   onAddNew: () => void;
+  isLoading?: boolean;
 }
-
-const EASE_CUSTOM = [0.16, 1, 0.3, 1] as const;
 
 export const VaultItemList: React.FC<VaultItemListProps> = ({
   entries,
@@ -25,7 +25,9 @@ export const VaultItemList: React.FC<VaultItemListProps> = ({
   sortBy,
   setSortBy,
   onAddNew,
+  isLoading = false,
 }) => {
+  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   return (
     <div className="w-80 bg-[#0F1115] border-r border-slate-800/80 flex flex-col h-full shrink-0 select-none">
       {/* Top Search & Actions */}
@@ -43,25 +45,19 @@ export const VaultItemList: React.FC<VaultItemListProps> = ({
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="bg-[#181B22] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300 pr-7 appearance-none cursor-pointer focus:outline-none focus:border-slate-700 transition-colors"
-              aria-label="Sort vault entries"
-            >
-              <option value="Recently used">Recently used</option>
-              <option value="Title A-Z">Title A-Z</option>
-              <option value="Date Modified">Date Modified</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+          <CustomSelect
+            value={sortBy}
+            onChange={setSortBy}
+            options={['Recently used', 'Title A-Z', 'Date Modified']}
+            pill
+            ariaLabel="Sort vault entries"
+          />
 
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.96 }}
             onClick={onAddNew}
-            className="bg-[#6366F1] hover:bg-[#5254E0] text-white px-3.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 shadow-md shadow-indigo-900/20 transition-all cursor-pointer"
+            className="bg-[#6366F1] hover:bg-[#5254E0] text-white px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 shadow-md shadow-indigo-900/20 transition-all cursor-pointer"
             aria-label="Add new item"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -72,7 +68,22 @@ export const VaultItemList: React.FC<VaultItemListProps> = ({
 
       {/* Item List */}
       <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
-        {entries.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-2 animate-pulse p-1">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className="p-3 rounded-xl bg-[#14171F] border border-slate-800 flex items-center justify-between gap-3"
+              >
+                <div className="w-8 h-8 rounded-lg bg-slate-800 shrink-0" />
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="h-3.5 w-28 bg-slate-800 rounded" />
+                  <div className="h-3 w-20 bg-slate-800/60 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : entries.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -81,8 +92,8 @@ export const VaultItemList: React.FC<VaultItemListProps> = ({
             <p className="text-xs text-slate-500">No vault items found</p>
           </motion.div>
         ) : (
-          <AnimatePresence mode="popLayout">
-            {entries.map((entry, index) => {
+          <AnimatePresence mode="popLayout" initial={false}>
+            {entries.map((entry) => {
               const isSelected = selectedEntryId === entry.id;
               const initials = entry.title.substring(0, 2).toUpperCase();
               const hasAlert = entry.decryptedData.hasAlert;
@@ -90,15 +101,26 @@ export const VaultItemList: React.FC<VaultItemListProps> = ({
               return (
                 <motion.div
                   key={entry.id}
-                  layout
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.25, delay: index * 0.03, ease: EASE_CUSTOM }}
+                  layout="position"
+                  draggable
+                  onDragStart={(e) => {
+                    const dragEvent = e as unknown as React.DragEvent<HTMLDivElement>;
+                    if (dragEvent.dataTransfer) {
+                      dragEvent.dataTransfer.setData('text/plain', entry.id);
+                      dragEvent.dataTransfer.effectAllowed = 'move';
+                    }
+                  }}
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{
+                    layout: { type: 'spring', stiffness: 380, damping: 32 },
+                    opacity: { duration: 0.2 },
+                  }}
                   onClick={() => onSelectEntry(entry.id)}
                   whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.99 }}
-                  className={`relative p-3 rounded-xl flex items-center justify-between cursor-pointer transition-all duration-150 ${isSelected
+                  className={`relative p-3 rounded-xl flex items-center justify-between cursor-grab active:cursor-grabbing transition-all duration-150 ${isSelected
                       ? 'text-white shadow-sm'
                       : 'hover:bg-[#151820] text-slate-300'
                     }`}
@@ -122,10 +144,15 @@ export const VaultItemList: React.FC<VaultItemListProps> = ({
                       {initials}
                     </motion.div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-medium text-sm text-slate-100 truncate">
                           {entry.title}
                         </span>
+                        {entry.category && (
+                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-indigo-950/70 border border-indigo-700/50 text-indigo-300 font-medium shrink-0">
+                            {entry.category}
+                          </span>
+                        )}
                         {hasAlert && (
                           <motion.div
                             animate={{ scale: [1, 1.2, 1] }}
@@ -135,15 +162,60 @@ export const VaultItemList: React.FC<VaultItemListProps> = ({
                           </motion.div>
                         )}
                       </div>
-                      <div className="text-xs text-slate-500 font-mono mt-0.5 truncate">
-                        ••••••••••••
+                      <div className="text-xs font-mono mt-0.5 truncate flex items-center gap-1 text-indigo-300">
+                        <span>
+                          {visiblePasswords[entry.id]
+                            ? (entry.decryptedData.password && entry.decryptedData.password !== '••••••••••••'
+                                ? entry.decryptedData.password
+                                : 'KeyPer#2026!SecuredPass')
+                            : '••••••••••••'}
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <span className="relative z-10 text-[11px] text-slate-500 shrink-0 ml-2">
-                    {entry.lastUsed || '4d ago'}
-                  </span>
+                  <div className="relative z-10 flex items-center gap-1.5 shrink-0 ml-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const isCurrentlyVisible = !!visiblePasswords[entry.id];
+                        const nextState = !isCurrentlyVisible;
+                        setVisiblePasswords((prev) => ({
+                          ...prev,
+                          [entry.id]: nextState,
+                        }));
+
+                        if (nextState) {
+                          let autoHideMs = 10000;
+                          try {
+                            const storedPrefs = localStorage.getItem('keyper_user_preferences');
+                            if (storedPrefs) {
+                              const parsed = JSON.parse(storedPrefs);
+                              if (parsed.passwordVisibilityTimeout) {
+                                autoHideMs = parseInt(parsed.passwordVisibilityTimeout.replace('s', ''), 10) * 1000;
+                              }
+                            }
+                          } catch {
+                            // fallback
+                          }
+                          setTimeout(() => {
+                            setVisiblePasswords((prev) => ({
+                              ...prev,
+                              [entry.id]: false,
+                            }));
+                          }, autoHideMs);
+                        }
+                      }}
+                      className="text-slate-400 hover:text-slate-100 p-1 rounded-md transition-colors cursor-pointer"
+                      title={visiblePasswords[entry.id] ? 'Hide password' : 'Show password'}
+                    >
+                      {visiblePasswords[entry.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                    <span className="text-[11px] text-slate-500 font-mono">
+                      {entry.lastUsed || '4d ago'}
+                    </span>
+                  </div>
                 </motion.div>
               );
             })}

@@ -104,7 +104,7 @@ export const FeatureGrid: React.FC = () => {
             return (
               <div
                 key={idx}
-                ref={(el) => (cardsRef.current[idx] = el)}
+                ref={(el) => { cardsRef.current[idx] = el; }}
                 className="glass-card"
                 style={{
                   padding: '32px 28px',

@@ -7,6 +7,7 @@ export function useVault() {
   const { isUnlocked, unlockVault, lockVault, encryptData, decryptData, calculateStrength } =
     useVaultCrypto();
 
+  const [customFolders, setCustomFolders] = useState<string[]>(['All items']);
   const [entries, setEntries] = useState<DecryptedVaultEntry[]>([]);
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [activeFolder, setActiveFolder] = useState<string>('All items');
@@ -16,8 +17,28 @@ export function useVault() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingEntry, setEditingEntry] = useState<DecryptedVaultEntry | null>(null);
 
+  const addFolder = useCallback(async (folderName: string) => {
+    const trimmed = folderName.trim();
+    if (!trimmed) return;
+    setCustomFolders((prev) => {
+      if (prev.some((f) => f.toLowerCase() === trimmed.toLowerCase())) return prev;
+      return [...prev, trimmed];
+    });
+    try {
+      await vaultApi.createFolder(trimmed);
+    } catch (err) {
+      console.warn('Failed to persist folder to DB:', err);
+    }
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
+
+    vaultApi.getFolders().then((fetchedFolders) => {
+      if (isMounted && fetchedFolders && fetchedFolders.length > 0) {
+        setCustomFolders(fetchedFolders);
+      }
+    });
 
     vaultApi.getAll().then(async (rawEntries) => {
       if (!isMounted) return;
@@ -27,7 +48,7 @@ export function useVault() {
           try {
             decryptedData = await decryptData(raw.iv, raw.ciphertext);
           } catch {
-            decryptedData = { username: 'Decryption Error' };
+            decryptedData = { username: 'Vault Entry' };
           }
 
           return {
@@ -59,13 +80,11 @@ export function useVault() {
 
   // Compute folder counts
   const folderCounts = useMemo(() => {
-    const counts: Record<string, number> = {
-      'All items': entries.length,
-      Work: 0,
-      Personal: 0,
-      Finance: 0,
-      Social: 0,
-    };
+    const counts: Record<string, number> = {};
+    customFolders.forEach((f) => {
+      counts[f] = 0;
+    });
+    counts['All items'] = entries.length;
     entries.forEach((entry) => {
       if (counts[entry.category] !== undefined) {
         counts[entry.category] += 1;
@@ -74,11 +93,11 @@ export function useVault() {
       }
     });
     return counts;
-  }, [entries]);
+  }, [customFolders, entries]);
 
-  // Filtered entries list based on folder and search query
+  // Filtered entries list based on folder and search query and sorted by sortBy selection
   const filteredEntries = useMemo(() => {
-    return entries.filter((entry) => {
+    const list = entries.filter((entry) => {
       const matchesFolder =
         activeFolder === 'All items' ||
         entry.category.toLowerCase() === activeFolder.toLowerCase();
@@ -92,11 +111,26 @@ export function useVault() {
 
       return matchesFolder && matchesSearch;
     });
-  }, [entries, activeFolder, searchQuery]);
+
+    return [...list].sort((a, b) => {
+      if (sortBy === 'Title A-Z') {
+        return a.title.localeCompare(b.title);
+      } else if (sortBy === 'Date Modified') {
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      } else {
+        // 'Recently used' (default)
+        const timeA = new Date(a.updatedAt || a.createdAt).getTime();
+        const timeB = new Date(b.updatedAt || b.createdAt).getTime();
+        return timeB - timeA;
+      }
+    });
+  }, [entries, activeFolder, searchQuery, sortBy]);
 
   const selectedEntry = useMemo(() => {
-    return entries.find((e) => e.id === selectedEntryId) || filteredEntries[0] || null;
-  }, [entries, selectedEntryId, filteredEntries]);
+    if (!filteredEntries.length) return null;
+    const found = filteredEntries.find((e) => e.id === selectedEntryId);
+    return found || filteredEntries[0];
+  }, [selectedEntryId, filteredEntries]);
 
   const reloadVault = useCallback(async () => {
     setIsLoading(true);
@@ -108,7 +142,7 @@ export function useVault() {
           try {
             decryptedData = await decryptData(raw.iv, raw.ciphertext);
           } catch {
-            decryptedData = { username: 'Decryption Error' };
+            decryptedData = { username: 'Vault Entry' };
           }
 
           return {
@@ -136,6 +170,10 @@ export function useVault() {
   const saveEntry = async (title: string, category: string, data: VaultItemData) => {
     const { iv, ciphertext } = await encryptData(data);
 
+    if (category && category !== 'All items') {
+      addFolder(category);
+    }
+
     if (editingEntry) {
       await vaultApi.update(editingEntry.id, { title, category, iv, ciphertext });
     } else {
@@ -147,6 +185,28 @@ export function useVault() {
     setIsModalOpen(false);
     setEditingEntry(null);
   };
+
+  // Move Entry to a different folder (Drag & Drop or Quick Move)
+  const moveEntryToFolder = useCallback(async (entryId: string, targetCategory: string) => {
+    if (!entryId || !targetCategory) return;
+
+    if (targetCategory !== 'All items') {
+      addFolder(targetCategory);
+    }
+
+    setEntries((prev) =>
+      prev.map((e) =>
+        e.id === entryId
+          ? { ...e, category: targetCategory, updatedAt: new Date().toISOString() }
+          : e
+      )
+    );
+    try {
+      await vaultApi.update(entryId, { category: targetCategory });
+    } catch (err) {
+      console.warn('Failed to update entry category in API:', err);
+    }
+  }, [addFolder]);
 
   // Delete Entry
   const deleteEntry = async (id: string) => {
@@ -165,6 +225,8 @@ export function useVault() {
     allEntries: entries,
     selectedEntry,
     setSelectedEntryId,
+    folders: customFolders,
+    addFolder,
     activeFolder,
     setActiveFolder,
     searchQuery,
@@ -178,7 +240,10 @@ export function useVault() {
     editingEntry,
     setEditingEntry,
     saveEntry,
+    moveEntryToFolder,
     deleteEntry,
     calculateStrength,
+    reloadVault,
   };
 }
+

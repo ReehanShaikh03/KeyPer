@@ -150,22 +150,27 @@ export const SuperconsciousHero: React.FC<SuperconsciousHeroProps> = ({ onOpenAu
               borderRadius: '9999px',
               background: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
               boxShadow: '0 0 30px rgba(168, 85, 247, 0.35)',
+              cursor: 'pointer',
             }}
           >
             Create Your Vault
             <ArrowRight size={18} />
           </button>
-          <a
-            href="#how-it-works"
+          <button
+            onClick={() => onOpenAuth('signin')}
             className="btn-secondary"
             style={{
               padding: '14px 32px',
               fontSize: '0.98rem',
               borderRadius: '9999px',
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#ffffff',
+              cursor: 'pointer',
             }}
           >
-            How It Works
-          </a>
+            Sign In To Vault
+          </button>
         </motion.div>
 
         {/* Scroll down indicator */}
