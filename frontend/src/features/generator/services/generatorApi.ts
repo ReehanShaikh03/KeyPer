@@ -10,19 +10,46 @@ import { MOCK_GENERATOR_PRESETS, mockDelay } from '../mocks/generator.mock';
 const isMock = import.meta.env.VITE_USE_MOCK === 'true' || true; // Default to mock fallback when backend unavailable
 
 class GeneratorApiService {
-  private memoryPresets: GeneratorPresetDto[] = [...MOCK_GENERATOR_PRESETS];
+  private memoryPresets: GeneratorPresetDto[] = this.loadInitialPresets();
+
+  private loadInitialPresets(): GeneratorPresetDto[] {
+    try {
+      const stored = localStorage.getItem('keyper_generator_presets');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (e) {
+      console.warn('Failed to parse local generator presets:', e);
+    }
+    return [...MOCK_GENERATOR_PRESETS];
+  }
+
+  private savePresetsToLocal(presets: GeneratorPresetDto[]) {
+    try {
+      localStorage.setItem('keyper_generator_presets', JSON.stringify(presets));
+    } catch (e) {
+      console.warn('Failed to save generator presets to localStorage:', e);
+    }
+  }
 
   async getPresets(): Promise<GeneratorPresetDto[]> {
     if (isMock) {
-      await mockDelay(300, 500);
+      await mockDelay(200, 300);
       return [...this.memoryPresets];
     }
-    return apiClient.get<GeneratorPresetDto[]>('/generator/presets');
+    try {
+      const presets = await apiClient.get<GeneratorPresetDto[]>('/generator/presets');
+      this.memoryPresets = presets;
+      this.savePresetsToLocal(presets);
+      return presets;
+    } catch {
+      return [...this.memoryPresets];
+    }
   }
 
   async createPreset(dto: CreateGeneratorPresetDto): Promise<GeneratorPresetDto> {
     if (isMock) {
-      await mockDelay(350, 550);
+      await mockDelay(250, 400);
       const newPreset: GeneratorPresetDto = {
         id: `preset-${Date.now()}`,
         name: dto.name,
@@ -35,14 +62,18 @@ class GeneratorApiService {
         this.memoryPresets = this.memoryPresets.map((p) => ({ ...p, isDefault: false }));
       }
       this.memoryPresets.push(newPreset);
+      this.savePresetsToLocal(this.memoryPresets);
       return newPreset;
     }
-    return apiClient.post<GeneratorPresetDto>('/generator/presets', dto);
+    const created = await apiClient.post<GeneratorPresetDto>('/generator/presets', dto);
+    this.memoryPresets.push(created);
+    this.savePresetsToLocal(this.memoryPresets);
+    return created;
   }
 
   async updatePreset(id: string, dto: UpdateGeneratorPresetDto): Promise<GeneratorPresetDto> {
     if (isMock) {
-      await mockDelay(300, 500);
+      await mockDelay(250, 400);
       const index = this.memoryPresets.findIndex((p) => p.id === id);
       if (index === -1) throw new Error('Preset not found');
 
@@ -60,18 +91,24 @@ class GeneratorApiService {
         updatedAt: new Date().toISOString(),
       };
       this.memoryPresets[index] = updated;
+      this.savePresetsToLocal(this.memoryPresets);
       return updated;
     }
-    return apiClient.put<GeneratorPresetDto>(`/generator/presets/${id}`, dto);
+    const updated = await apiClient.put<GeneratorPresetDto>(`/generator/presets/${id}`, dto);
+    await this.getPresets();
+    return updated;
   }
 
   async deletePreset(id: string): Promise<void> {
     if (isMock) {
-      await mockDelay(300, 450);
+      await mockDelay(200, 350);
       this.memoryPresets = this.memoryPresets.filter((p) => p.id !== id);
+      this.savePresetsToLocal(this.memoryPresets);
       return;
     }
-    return apiClient.delete<void>(`/generator/presets/${id}`);
+    await apiClient.delete<void>(`/generator/presets/${id}`);
+    this.memoryPresets = this.memoryPresets.filter((p) => p.id !== id);
+    this.savePresetsToLocal(this.memoryPresets);
   }
 
   /**

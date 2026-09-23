@@ -12,7 +12,7 @@ export class CreateVaultEntryDto {
 
     @IsString()
     @IsOptional()
-    @MaxLength(50)
+    @MaxLength(100)
     category?: string;
 
     @IsString()

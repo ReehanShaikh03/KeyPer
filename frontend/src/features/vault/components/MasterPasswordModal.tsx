@@ -29,10 +29,12 @@ export const MasterPasswordModal: React.FC<MasterPasswordModalProps> = ({
     try {
       const success = await onUnlock(password);
       if (!success) {
-        setError('Failed to derive encryption key. Check master password.');
+        setError('Incorrect Master Password. Please check your credentials and try again.');
+      } else {
+        setPassword('');
       }
     } catch {
-      setError('An error occurred during WebCrypto key derivation.');
+      setError('An error occurred while verifying Master Password.');
     } finally {
       setIsDerivingKey(false);
     }

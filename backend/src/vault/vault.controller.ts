@@ -49,6 +49,19 @@ export class VaultController {
         return this.vaultService.findAll(user.id);
     }
 
+    @Get('folders')
+    getFolders(@Req() req: express.Request) {
+        const user = req.user as { id: string };
+        return this.vaultService.getFolders(user.id);
+    }
+
+    @Post('folders')
+    @HttpCode(HttpStatus.CREATED)
+    createFolder(@Req() req: express.Request, @Body('name') name: string) {
+        const user = req.user as { id: string };
+        return this.vaultService.createFolder(user.id, name);
+    }
+
     @Get(':id')
     findOne(
         @Req() req: express.Request,

@@ -142,7 +142,7 @@ export const InteractivePlayground: React.FC = () => {
           
           {/* Card 1: Encryption Simulator */}
           <div
-            ref={(el) => (cardsRef.current[0] = el)}
+            ref={(el) => { cardsRef.current[0] = el; }}
             className="glass-bento"
             style={{
               padding: '32px 28px',
@@ -218,7 +218,7 @@ export const InteractivePlayground: React.FC = () => {
           {/* Card 2: Password Generator (Connected with Navbar #generator) */}
           <div
             id="generator"
-            ref={(el) => (cardsRef.current[1] = el)}
+            ref={(el) => { cardsRef.current[1] = el; }}
             className="glass-bento"
             style={{
               padding: '32px 28px',

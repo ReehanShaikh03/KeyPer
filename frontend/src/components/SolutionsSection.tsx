@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Users, ShieldCheck, Check, Key, Zap, Lock, Database, ArrowRight } from 'lucide-react';
+import { User, Users, Check } from 'lucide-react';
 
 export const SolutionsSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'individuals' | 'teams'>('individuals');

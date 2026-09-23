@@ -1,6 +1,6 @@
 // Base API client using Fetch API matching backend NestJS API requirements
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/api$/, '');
 
 export interface RequestOptions extends Omit<RequestInit, 'headers'> {
   params?: Record<string, string>;
@@ -32,6 +32,13 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   });
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('keyper_auth_token');
+      // Do not clear user email on login/auth verification failures
+      if (!endpoint.includes('/auth/login') && !endpoint.includes('/auth/pre-login') && !endpoint.includes('/change-master-password')) {
+        localStorage.removeItem('keyper_user_email');
+      }
+    }
     let errorMessage = `HTTP Error ${response.status}`;
     try {
       const errorData = (await response.json()) as { message?: string };

@@ -77,13 +77,13 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ onOpenAuth }) =>
           </span>
         </a>
 
-        {/* Center Nav Links (Includes Password Generator as requested) */}
+        {/* Center Nav Links */}
         <nav style={{ display: 'none', alignItems: 'center', gap: '26px' }} className="desktop-pill-nav">
           <a href="#hero" style={navLinkStyle}>About</a>
           <a href="#how-it-works" style={navLinkStyle}>How It Works</a>
           <a href="#bento-grid" style={navLinkStyle}>Feature Map</a>
           <a href="#interactive-demo" style={navLinkStyle}>Security Demo</a>
-          {/* <a href="#generator" style={navLinkStyle}>Generator</a> */}
+          <a href="#interactive-demo" style={navLinkStyle}>Generator</a>
         </nav>
 
         {/* Right CTA */}
@@ -184,6 +184,21 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ onOpenAuth }) =>
               <a href="#generator" onClick={() => setMobileMenuOpen(false)} style={mobileNavLinkStyle}>Generator</a>
               <hr style={{ border: 'none', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }} />
               <button
+                onClick={() => { setMobileMenuOpen(false); onOpenAuth('signin'); }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Sign In
+              </button>
+              <button
                 onClick={() => { setMobileMenuOpen(false); onOpenAuth('signup'); }}
                 style={{
                   width: '100%',
@@ -196,7 +211,7 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ onOpenAuth }) =>
                   cursor: 'pointer',
                 }}
               >
-                Get Started
+                Get Started (Create Vault)
               </button>
             </div>
           </motion.div>

@@ -18,7 +18,6 @@ export interface GeneratorPresetModalProps {
 export const GeneratorPresetModal: React.FC<GeneratorPresetModalProps> = ({
   isOpen,
   onClose,
-  options,
   presets,
   onSavePreset,
   onApplyPreset,
