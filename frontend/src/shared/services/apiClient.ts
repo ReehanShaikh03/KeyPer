@@ -1,59 +1,28 @@
-// Base API client using Fetch API matching backend NestJS API requirements
+import { api, setAccessToken, getAccessToken } from './api';
+import { AxiosError } from 'axios';
 
-const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/api$/, '');
-
-export interface RequestOptions extends Omit<RequestInit, 'headers'> {
+export interface RequestOptions {
   params?: Record<string, string>;
   headers?: Record<string, string>;
 }
 
-async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('keyper_auth_token') : null;
-  
-  let queryStr = '';
-  if (options.params) {
-    const searchParams = new URLSearchParams(options.params);
-    queryStr = `?${searchParams.toString()}`;
-  }
-
-  const headers: Record<string, string> = {
-    ...(options.headers || {}),
-  };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  const { params: _params, ...fetchOptions } = options;
-
-  const response = await fetch(`${BASE_URL}${endpoint}${queryStr}`, {
-    ...fetchOptions,
-    headers,
-  });
-
-  if (!response.ok) {
-    if (response.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('keyper_auth_token');
-      // Do not clear user email on login/auth verification failures
-      if (!endpoint.includes('/auth/login') && !endpoint.includes('/auth/pre-login') && !endpoint.includes('/change-master-password')) {
-        localStorage.removeItem('keyper_user_email');
-      }
+async function request<T>(endpoint: string, options: { method?: string; body?: any } & RequestOptions = {}): Promise<T> {
+  try {
+    const response = await api.request<T>({
+      url: endpoint,
+      method: options.method || 'GET',
+      data: options.body,
+      params: options.params,
+      headers: options.headers,
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const errorMessage = error.response?.data?.message || error.message || `HTTP Error ${error.response?.status}`;
+      throw new Error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
     }
-    let errorMessage = `HTTP Error ${response.status}`;
-    try {
-      const errorData = (await response.json()) as { message?: string };
-      errorMessage = errorData.message || errorMessage;
-    } catch {
-      // Fallback
-    }
-    throw new Error(errorMessage);
+    throw error;
   }
-
-  if (response.status === 204) {
-    return {} as T;
-  }
-
-  return response.json() as Promise<T>;
 }
 
 export const apiClient = {
@@ -65,11 +34,7 @@ export const apiClient = {
     return request<T>(url, {
       ...options,
       method: 'POST',
-      body: JSON.stringify(body),
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers || {}),
-      },
+      body,
     });
   },
 
@@ -77,11 +42,7 @@ export const apiClient = {
     return request<T>(url, {
       ...options,
       method: 'PUT',
-      body: JSON.stringify(body),
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers || {}),
-      },
+      body,
     });
   },
 
@@ -91,3 +52,5 @@ export const apiClient = {
 
   request,
 };
+
+export { setAccessToken, getAccessToken };

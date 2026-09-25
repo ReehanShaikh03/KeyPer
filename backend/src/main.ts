@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import * as express from 'express';
 import { AppModule } from './app.module.js';
 
@@ -8,8 +9,9 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
-  // 1. HTTP Security Headers
+  // 1. HTTP Security & Cookies
   app.use(helmet());
+  app.use(cookieParser());
 
   // 2. Allowed origins list
   const allowedOrigins = [
