@@ -14,7 +14,7 @@ async function bootstrap() {
   // 2. Strict CORS Configuration
   const allowedOrigins = [
     'http://localhost:5173',
-    'https://key-per-flax.vercel.app/',
+    'https://key-per-flax.vercel.app', // ✅ Removed trailing slash
   ].filter(Boolean) as string[];
 
   app.enableCors({
@@ -22,15 +22,27 @@ async function bootstrap() {
       origin: string | undefined,
       callback: (err: Error | null, allow?: boolean) => void,
     ) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow server-to-server, curl, Postman, or requests without Origin headers
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // Allow exact match or Vercel preview deployment subdomains
+      const isAllowed =
+        allowedOrigins.includes(origin) ||
+        /^https:\/\/key-per-flax.*\.vercel\.app$/.test(origin);
+
+      if (isAllowed) {
         callback(null, true);
       } else {
+        logger.warn(`Blocked request from disallowed origin: ${origin}`);
         callback(new Error('Blocked by CORS policy'));
       }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    optionsSuccessStatus: 204, // Clean preflight resolution
   });
 
   // 3. Payload size caps to prevent memory exhaustion attacks
@@ -41,7 +53,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,            // Strips properties not declared in DTO
-      forbidNonWhitelisted: true,  // Rejects requests with rogue payload keys
+      forbidNonWhitelisted: true, // Rejects requests with rogue payload keys
       transform: true,            // Auto-casts incoming data to DTO types
     }),
   );
