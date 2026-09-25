@@ -11,26 +11,29 @@ async function bootstrap() {
   // 1. HTTP Security Headers
   app.use(helmet());
 
-  // 2. Strict CORS Configuration
+  // 2. Allowed origins list
   const allowedOrigins = [
     'http://localhost:5173',
-    'https://key-per-flax.vercel.app', // ✅ Removed trailing slash
+    'https://key-per-flax.vercel.app',
+    process.env.FRONTEND_URL, // Optional: add Render env var if configured
   ].filter(Boolean) as string[];
 
+  // 3. Strict CORS Configuration
   app.enableCors({
     origin: (
       origin: string | undefined,
       callback: (err: Error | null, allow?: boolean) => void,
     ) => {
-      // Allow server-to-server, curl, Postman, or requests without Origin headers
+      // Allow non-browser agents (cURL, Postman, server-to-server)
       if (!origin) {
         return callback(null, true);
       }
 
-      // Allow exact match or Vercel preview deployment subdomains
+      // Match exact origins OR any Vercel preview/branch deploy for KeyPer
+      // Matches both 'key-per-flax-*.vercel.app' and 'key-per-git-*.vercel.app'
       const isAllowed =
         allowedOrigins.includes(origin) ||
-        /^https:\/\/key-per-flax.*\.vercel\.app$/.test(origin);
+        /^https:\/\/key-per(-[a-z0-9-]+)?\.vercel\.app$/.test(origin);
 
       if (isAllowed) {
         callback(null, true);
@@ -42,24 +45,24 @@ async function bootstrap() {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-    optionsSuccessStatus: 204, // Clean preflight resolution
+    optionsSuccessStatus: 204,
   });
 
-  // 3. Payload size caps to prevent memory exhaustion attacks
+  // 4. Payload size caps
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-  // 4. Strict Validation & Stripping of Unexpected Properties
+  // 5. Strict Validation
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,            // Strips properties not declared in DTO
-      forbidNonWhitelisted: true, // Rejects requests with rogue payload keys
-      transform: true,            // Auto-casts incoming data to DTO types
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
     }),
   );
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  logger.log(`KeyPer Backend hardened and running on port ${port}`);
+  logger.log(`KeyPer Backend running on port ${port}`);
 }
 bootstrap();
