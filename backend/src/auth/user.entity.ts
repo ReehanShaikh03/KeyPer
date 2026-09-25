@@ -45,4 +45,10 @@ export class User {
 
     @UpdateDateColumn()
     updatedAt: Date;
+    @Column({ type: 'varchar', nullable: true })
+    passwordHash: string | null;
+
+    // Store hashed refresh token; null when logged out
+    @Column({ type: 'varchar', nullable: true })
+    hashedRefreshToken: string | null;
 }

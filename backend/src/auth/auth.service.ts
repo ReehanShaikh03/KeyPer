@@ -1,6 +1,7 @@
 import {
     BadRequestException,
     ConflictException,
+    ForbiddenException,
     Injectable,
     Logger,
     NotFoundException,
@@ -160,14 +161,15 @@ export class AuthService {
         user.recoveryCodesHash.splice(codeIndex, 1);
         await this.userRepository.save(user);
 
-        // Issue temporary JWT session
-        const payload = { sub: user.id, email: user.email };
-        const accessToken = this.jwtService.sign(payload);
+        // Issue rotated session tokens
+        const tokens = await this.getTokens(user.id, user.email);
+        await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
 
         return {
             message: 'Recovery code accepted. Configure your new credentials immediately.',
             remainingCodes: user.recoveryCodesHash.length,
-            accessToken,
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
             tokenType: 'Bearer',
             expiresIn: '15m',
         };
@@ -260,12 +262,13 @@ export class AuthService {
             metadata: { email: user.email },
         });
 
-        const payload = { sub: user.id, email: user.email };
-        const accessToken = this.jwtService.sign(payload);
+        const tokens = await this.getTokens(user.id, user.email);
+        await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
 
         return {
             requires2FA: false,
-            accessToken,
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
             tokenType: 'Bearer',
             expiresIn: '15m',
             user: {
@@ -333,11 +336,12 @@ export class AuthService {
             metadata: { email: user.email, method: '2FA_OTP' },
         });
 
-        const sessionPayload = { sub: user.id, email: user.email };
-        const accessToken = this.jwtService.sign(sessionPayload);
+        const tokens = await this.getTokens(user.id, user.email);
+        await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
 
         return {
-            accessToken,
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
             tokenType: 'Bearer',
             expiresIn: '15m',
             user: {
@@ -497,5 +501,59 @@ export class AuthService {
         });
 
         return { message: 'Master password updated successfully in database' };
+    }
+
+    // --- Refresh Token Rotation Helpers ---
+    async getTokens(userId: string, email: string) {
+        const payload = { sub: userId, email };
+        const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') || this.configService.get<string>('JWT_SECRET');
+
+        const [accessToken, refreshToken] = await Promise.all([
+            this.jwtService.signAsync(payload, {
+                secret: this.configService.get<string>('JWT_SECRET'),
+                expiresIn: '15m',
+            }),
+            this.jwtService.signAsync(payload, {
+                secret: refreshSecret,
+                expiresIn: '7d',
+            }),
+        ]);
+
+        return { accessToken, refreshToken };
+    }
+
+    async updateRefreshTokenHash(userId: string, refreshToken: string) {
+        const hash = await argon2.hash(refreshToken);
+        await this.userRepository.update(userId, { hashedRefreshToken: hash });
+    }
+
+    async refreshTokens(userId: string, refreshTokenStr: string) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user || !user.hashedRefreshToken) {
+            throw new ForbiddenException('Access Denied');
+        }
+
+        let refreshTokenMatches = false;
+        try {
+            refreshTokenMatches = await argon2.verify(user.hashedRefreshToken, refreshTokenStr);
+        } catch {
+            refreshTokenMatches = false;
+        }
+
+        if (!refreshTokenMatches) {
+            // Reuse Detection: invalidate user refresh tokens immediately
+            user.hashedRefreshToken = null;
+            await this.userRepository.save(user);
+            throw new ForbiddenException('Token reuse detected');
+        }
+
+        // Issue brand new access token and brand new refresh token (Rotation)
+        const tokens = await this.getTokens(user.id, user.email);
+        await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
+        return tokens;
+    }
+
+    async logout(userId: string) {
+        await this.userRepository.update(userId, { hashedRefreshToken: null });
     }
 }

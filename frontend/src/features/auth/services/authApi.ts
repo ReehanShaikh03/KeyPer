@@ -1,4 +1,4 @@
-import { apiClient } from '@/shared/services/apiClient';
+import { apiClient, setAccessToken, getAccessToken } from '@/shared/services/apiClient';
 
 export interface RegisterDto {
   email: string;
@@ -63,16 +63,15 @@ export interface RedeemRecoveryCodeDto {
   code: string;
 }
 
-const TOKEN_KEY = 'keyper_auth_token';
 const USER_EMAIL_KEY = 'keyper_user_email';
 const TWO_FACTOR_ENABLED_KEY = 'keyper_2fa_enabled';
 
 export const authStorage = {
   getToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+    return getAccessToken();
   },
   setToken(token: string): void {
-    localStorage.setItem(TOKEN_KEY, token);
+    setAccessToken(token);
   },
   setUserEmail(email: string): void {
     localStorage.setItem(USER_EMAIL_KEY, email);
@@ -87,7 +86,7 @@ export const authStorage = {
     return localStorage.getItem(TWO_FACTOR_ENABLED_KEY) === 'true';
   },
   clearAuth(): void {
-    localStorage.removeItem(TOKEN_KEY);
+    setAccessToken(null);
     localStorage.removeItem(USER_EMAIL_KEY);
     localStorage.removeItem(TWO_FACTOR_ENABLED_KEY);
   },
