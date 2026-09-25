@@ -9,6 +9,9 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
+  // Enable trust proxy for cloud load balancers (Render/Railway/Vercel)
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   // 1. HTTP Security & Cookies
   app.use(helmet());
   app.use(cookieParser());
