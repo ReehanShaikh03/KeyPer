@@ -11,9 +11,9 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { useVault } from '../hooks/useVault';
-import { VaultSidebar } from '../components/VaultSidebar';
-import { VaultItemList } from '../components/VaultItemList';
-import { VaultDetail } from '../components/VaultDetail';
+// import { VaultSidebar } from '../components/VaultSidebar';
+// import { VaultItemList } from '../components/VaultItemList';
+// import { VaultDetail } from '../components/VaultDetail';
 import { AddEditEntryModal } from '../components/AddEditEntryModal';
 import { MasterPasswordModal } from '../components/MasterPasswordModal';
 import { BottomMobileNav } from '../components/BottomMobileNav';

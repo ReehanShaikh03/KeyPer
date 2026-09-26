@@ -33,7 +33,7 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
   onLogout,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, logout, lockVault, isVaultLocked } = useAuth();
+  const { user, logout, setVaultLocked } = useAuth();
 
   const handleNavClick = (tabName: string) => {
     setActiveTab(tabName);
@@ -54,7 +54,7 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
     if (onLockVault) {
       onLockVault();
     } else {
-      lockVault();
+      setVaultLocked(true);
     }
   };
 
@@ -70,11 +70,10 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
         {/* 1. Vault Tab */}
         <button
           onClick={() => handleNavClick('Vault')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer ${
-            activeTab === 'Vault' && !isMenuOpen
+          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer ${activeTab === 'Vault' && !isMenuOpen
               ? 'text-indigo-400 font-semibold'
               : 'text-slate-400 hover:text-slate-200'
-          }`}
+            }`}
         >
           <div className="relative">
             <Shield className="w-5 h-5" />
@@ -92,11 +91,10 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
         {/* 2. Generator Tab */}
         <button
           onClick={() => handleNavClick('Generator')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer ${
-            activeTab === 'Generator' && !isMenuOpen
+          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer ${activeTab === 'Generator' && !isMenuOpen
               ? 'text-indigo-400 font-semibold'
               : 'text-slate-400 hover:text-slate-200'
-          }`}
+            }`}
         >
           <div className="relative">
             <Key className="w-5 h-5" />
@@ -130,11 +128,10 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
         {/* 4. Security Tab */}
         <button
           onClick={() => handleNavClick('Security')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer ${
-            activeTab === 'Security' && !isMenuOpen
+          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer ${activeTab === 'Security' && !isMenuOpen
               ? 'text-indigo-400 font-semibold'
               : 'text-slate-400 hover:text-slate-200'
-          }`}
+            }`}
         >
           <div className="relative">
             <ShieldCheck className="w-5 h-5" />
@@ -152,11 +149,10 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
         {/* 5. Menu Tab (Toggles Drawer Sheet) */}
         <button
           onClick={() => setIsMenuOpen((prev) => !prev)}
-          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer ${
-            isMenuOpen || activeTab === 'Settings' || activeTab === 'Audit log'
+          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 cursor-pointer ${isMenuOpen || activeTab === 'Settings' || activeTab === 'Audit log'
               ? 'text-indigo-400 font-semibold'
               : 'text-slate-400 hover:text-slate-200'
-          }`}
+            }`}
         >
           <div className="relative">
             <Menu className="w-5 h-5" />
@@ -242,11 +238,10 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
                 {/* Settings */}
                 <button
                   onClick={() => handleNavClick('Settings')}
-                  className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
-                    activeTab === 'Settings'
+                  className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${activeTab === 'Settings'
                       ? 'bg-[#232734] border-indigo-500/50 text-white'
                       : 'bg-[#181B24] border-slate-800/80 text-slate-300 hover:bg-[#1E222D]'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
@@ -263,11 +258,10 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
                 {/* Audit Log */}
                 <button
                   onClick={() => handleNavClick('Audit log')}
-                  className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
-                    activeTab === 'Audit log'
+                  className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${activeTab === 'Audit log'
                       ? 'bg-[#232734] border-indigo-500/50 text-white'
                       : 'bg-[#181B24] border-slate-800/80 text-slate-300 hover:bg-[#1E222D]'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
@@ -284,11 +278,10 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
                 {/* Security Health */}
                 <button
                   onClick={() => handleNavClick('Security')}
-                  className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
-                    activeTab === 'Security'
+                  className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${activeTab === 'Security'
                       ? 'bg-[#232734] border-indigo-500/50 text-white'
                       : 'bg-[#181B24] border-slate-800/80 text-slate-300 hover:bg-[#1E222D]'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
