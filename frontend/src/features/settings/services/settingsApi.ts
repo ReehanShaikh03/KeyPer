@@ -76,6 +76,9 @@ export const settingsApi = {
         const stored = localStorage.getItem(PREFS_KEY);
         const currentPrefs = stored ? JSON.parse(stored) : mockUserSettings.preferences;
         localStorage.setItem(PREFS_KEY, JSON.stringify({ ...currentPrefs, ...partialSettings.preferences }));
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('keyper:preferences_updated'));
+        }
       } catch {
         // Fallback
       }

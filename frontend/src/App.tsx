@@ -31,9 +31,9 @@ const MainAppContent: React.FC = () => {
 
   const handleAuthSuccess = async () => {
     setAuthModalOpen(false);
-    // Refresh session to populate user profile and unlock vault
-    await refreshSession();
     setVaultLocked(false);
+    // Async profile refresh in background without unmounting vault page
+    refreshSession().catch(() => {});
   };
 
   // 1. Cold Start Bootstrap: Show dark slate splash loader while silent refresh is in progress

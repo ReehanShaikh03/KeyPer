@@ -16,6 +16,8 @@ import { VaultItemList } from '../components/VaultItemList';
 import { VaultDetail } from '../components/VaultDetail';
 import { AddEditEntryModal } from '../components/AddEditEntryModal';
 import { MasterPasswordModal } from '../components/MasterPasswordModal';
+import { BottomMobileNav } from '../components/BottomMobileNav';
+import { MobileCascadingVault } from '../components/MobileCascadingVault';
 import { SecurityPage } from '@/features/security/pages/SecurityPage';
 import { SettingsPage } from '@/features/settings/pages/SettingsPage';
 import { GeneratorPage } from '@/features/generator/pages/GeneratorPage';
@@ -107,9 +109,9 @@ export const VaultPage: React.FC<VaultPageProps> = ({ onLogout }) => {
       </header>
 
       {/* Main Container */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Far Left Navigation Rail */}
-        <aside className="w-48 bg-[#0F1115] border-r border-slate-800/80 p-3 flex flex-col justify-between shrink-0">
+      <div className="flex-1 flex overflow-hidden relative pb-16 md:pb-0">
+        {/* Far Left Navigation Rail (Desktop) */}
+        <aside className="hidden md:flex w-48 bg-[#0F1115] border-r border-slate-800/80 p-3 flex-col justify-between shrink-0">
           <nav className="space-y-1" aria-label="Main Navigation">
             {[
               { name: 'Vault', icon: Shield },
@@ -125,8 +127,8 @@ export const VaultPage: React.FC<VaultPageProps> = ({ onLogout }) => {
                   key={nav.name}
                   onClick={() => setActiveTab(nav.name)}
                   className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-colors cursor-pointer ${isActive
-                      ? 'text-white font-semibold'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#151820]'
+                    ? 'text-white font-semibold'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-[#151820]'
                     }`}
                 >
                   {isActive && (
@@ -175,42 +177,39 @@ export const VaultPage: React.FC<VaultPageProps> = ({ onLogout }) => {
             ) : activeTab === 'Audit log' ? (
               <AuditPage />
             ) : (
-              <>
-                {/* Folders Column */}
-                <VaultSidebar
-                  folders={folders}
-                  activeFolder={activeFolder}
-                  setActiveFolder={setActiveFolder}
-                  onAddFolder={addFolder}
-                  onMoveEntryToFolder={moveEntryToFolder}
-                  folderCounts={folderCounts}
-                />
-
-                {/* Middle Item List Column */}
-                <VaultItemList
-                  entries={entries}
-                  selectedEntryId={selectedEntry?.id || null}
-                  onSelectEntry={(id) => setSelectedEntryId(id)}
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  sortBy={sortBy}
-                  setSortBy={setSortBy}
-                  onAddNew={handleAddNew}
-                  isLoading={isLoading}
-                />
-
-                {/* Right Detail Pane */}
-                <VaultDetail
-                  entry={selectedEntry}
-                  onEdit={(entry) => handleEdit(entry)}
-                  onDelete={deleteEntry}
-                  calculateStrength={calculateStrength}
-                />
-              </>
+              <MobileCascadingVault
+                folders={folders}
+                activeFolder={activeFolder}
+                setActiveFolder={setActiveFolder}
+                addFolder={addFolder}
+                moveEntryToFolder={moveEntryToFolder}
+                folderCounts={folderCounts}
+                entries={entries}
+                selectedEntry={selectedEntry}
+                setSelectedEntryId={setSelectedEntryId}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                onAddNew={handleAddNew}
+                onEdit={handleEdit}
+                onDelete={deleteEntry}
+                calculateStrength={calculateStrength}
+                isLoading={isLoading}
+              />
             )}
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Bottom Floating Mobile Nav Rail */}
+      <BottomMobileNav
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onAddNew={handleAddNew}
+        onLockVault={lockVault}
+        onLogout={onLogout}
+      />
 
       {/* Modals */}
       <MasterPasswordModal

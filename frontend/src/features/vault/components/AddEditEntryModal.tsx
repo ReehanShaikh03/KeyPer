@@ -140,10 +140,10 @@ export const AddEditEntryModal: React.FC<AddEditEntryModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 10 }}
           transition={{ duration: 0.25, ease: EASE_CUSTOM }}
-          className="bg-[#181B22] border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl"
+          className="bg-[#181B22] border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/80">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/80 shrink-0">
             <h3 className="text-base font-bold text-white">
               {editingEntry ? 'Edit Vault Entry' : 'Add New Entry'}
             </h3>
@@ -157,7 +157,7 @@ export const AddEditEntryModal: React.FC<AddEditEntryModalProps> = ({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-400 mb-1.5">
