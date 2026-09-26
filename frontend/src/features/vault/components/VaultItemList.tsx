@@ -29,7 +29,7 @@ export const VaultItemList: React.FC<VaultItemListProps> = ({
 }) => {
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   return (
-    <div className="w-80 bg-[#0F1115] border-r border-slate-800/80 flex flex-col h-full shrink-0 select-none">
+    <div className="w-full md:w-80 bg-[#0F1115] border-r border-slate-800/80 flex flex-col h-full shrink-0 select-none">
       {/* Top Search & Actions */}
       <div className="p-3 border-b border-slate-800/60 space-y-3">
         <div className="relative">
@@ -121,8 +121,8 @@ export const VaultItemList: React.FC<VaultItemListProps> = ({
                   whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.99 }}
                   className={`relative p-3 rounded-xl flex items-center justify-between cursor-grab active:cursor-grabbing transition-all duration-150 ${isSelected
-                      ? 'text-white shadow-sm'
-                      : 'hover:bg-[#151820] text-slate-300'
+                    ? 'text-white shadow-sm'
+                    : 'hover:bg-[#151820] text-slate-300'
                     }`}
                   role="button"
                   tabIndex={0}
@@ -166,8 +166,8 @@ export const VaultItemList: React.FC<VaultItemListProps> = ({
                         <span>
                           {visiblePasswords[entry.id]
                             ? (entry.decryptedData.password && entry.decryptedData.password !== '••••••••••••'
-                                ? entry.decryptedData.password
-                                : 'KeyPer#2026!SecuredPass')
+                              ? entry.decryptedData.password
+                              : 'KeyPer#2026!SecuredPass')
                             : '••••••••••••'}
                         </span>
                       </div>

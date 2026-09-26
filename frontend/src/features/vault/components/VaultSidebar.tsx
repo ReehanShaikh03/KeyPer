@@ -36,7 +36,7 @@ export const VaultSidebar: React.FC<VaultSidebarProps> = ({
   };
 
   return (
-    <aside className="w-64 bg-[#14171F] border-r border-slate-800/80 p-4 flex flex-col justify-between shrink-0 select-none">
+    <aside className="w-full md:w-64 bg-[#14171F] border-r border-slate-800/80 p-4 flex flex-col justify-between shrink-0 select-none h-full">
       <div>
         <div className="flex items-center justify-between text-xs font-semibold text-slate-500 tracking-wider uppercase mb-3 px-3">
           <span>Folders</span>
@@ -126,13 +126,12 @@ export const VaultSidebar: React.FC<VaultSidebarProps> = ({
                 }}
                 whileHover={{ x: 2 }}
                 whileTap={{ scale: 0.98 }}
-                className={`w-full relative flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
-                  isDraggedOver
+                className={`w-full relative flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${isDraggedOver
                     ? 'bg-indigo-600/30 border-2 border-indigo-500 text-white scale-[1.02] shadow-lg shadow-indigo-900/40'
                     : isActive
-                    ? 'text-white font-semibold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-[#1A1D27]/60'
-                }`}
+                      ? 'text-white font-semibold'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#1A1D27]/60'
+                  }`}
                 aria-current={isActive ? 'page' : undefined}
               >
                 {isActive && !isDraggedOver && (
@@ -144,24 +143,22 @@ export const VaultSidebar: React.FC<VaultSidebarProps> = ({
                 )}
                 <div className="relative z-10 flex items-center gap-3">
                   <Icon
-                    className={`w-4 h-4 transition-colors duration-200 ${
-                      isDraggedOver
+                    className={`w-4 h-4 transition-colors duration-200 ${isDraggedOver
                         ? 'text-indigo-300 animate-pulse'
                         : isActive
-                        ? 'text-indigo-400'
-                        : 'text-slate-500'
-                    }`}
+                          ? 'text-indigo-400'
+                          : 'text-slate-500'
+                      }`}
                   />
                   <span>{folderName}</span>
                 </div>
                 <span
-                  className={`relative z-10 text-xs px-2 py-0.5 rounded-full transition-colors ${
-                    isDraggedOver
+                  className={`relative z-10 text-xs px-2 py-0.5 rounded-full transition-colors ${isDraggedOver
                       ? 'bg-indigo-500 text-white font-bold'
                       : isActive
-                      ? 'bg-[#313547] text-slate-200 font-semibold'
-                      : 'text-slate-500'
-                  }`}
+                        ? 'bg-[#313547] text-slate-200 font-semibold'
+                        : 'text-slate-500'
+                    }`}
                 >
                   {count}
                 </span>

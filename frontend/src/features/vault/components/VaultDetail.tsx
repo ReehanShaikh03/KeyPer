@@ -10,6 +10,7 @@ import {
   RefreshCw,
   ExternalLink,
   Clock,
+  ArrowLeft,
 } from 'lucide-react';
 import type { DecryptedVaultEntry, StrengthAnalysis } from '../types/vault.types';
 
@@ -18,6 +19,7 @@ interface VaultDetailProps {
   onEdit: (entry: DecryptedVaultEntry) => void;
   onDelete: (id: string) => void;
   calculateStrength: (password?: string) => StrengthAnalysis;
+  onBack?: () => void;
 }
 
 const EASE_CUSTOM = [0.16, 1, 0.3, 1] as const;
@@ -27,6 +29,7 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
   onEdit,
   onDelete,
   calculateStrength,
+  onBack,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [countdownSec, setCountdownSec] = useState<number | null>(null);
@@ -122,7 +125,7 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
   };
 
   return (
-    <div className="flex-1 bg-[#0F1115] p-6 overflow-y-auto custom-scrollbar flex flex-col justify-between">
+    <div className="flex-1 bg-[#0F1115] p-4 sm:p-6 pb-28 md:pb-8 overflow-y-auto custom-scrollbar flex flex-col justify-between h-full">
       <AnimatePresence mode="wait">
         <motion.div
           key={entry.id}
@@ -132,37 +135,47 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
           transition={{ duration: 0.3, ease: EASE_CUSTOM }}
           className="max-w-2xl mx-auto w-full space-y-6"
         >
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="md:hidden flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white bg-[#1A1D27] border border-slate-800 rounded-xl px-3 py-2 transition-colors cursor-pointer w-fit mb-2"
+            >
+              <ArrowLeft className="w-4 h-4 text-indigo-400" />
+              <span>Back to items</span>
+            </button>
+          )}
+
           {/* Detail Header */}
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-5">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-5">
+            <div className="flex items-center gap-3 min-w-0 flex-1 w-full sm:w-auto">
               <motion.div
                 initial={{ scale: 0.9, rotate: -5 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                className="w-14 h-14 rounded-2xl bg-[#232733] border border-slate-700/60 flex items-center justify-center font-bold text-lg text-slate-100 shadow-md"
+                className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#232733] border border-slate-700/60 flex items-center justify-center font-bold text-base sm:text-lg text-slate-100 shadow-md shrink-0"
               >
                 {initials}
               </motion.div>
-              <div>
-                <h2 className="text-2xl font-bold text-white tracking-tight">{title}</h2>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">{title}</h2>
                 <a
                   href={url.startsWith('http') ? url : `https://${url}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-1 mt-0.5"
+                  className="text-xs text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-1 mt-0.5 min-w-0"
                 >
-                  <span>{url}</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <span className="truncate">{url}</span>
+                  <ExternalLink className="w-3 h-3 shrink-0" />
                 </a>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => onEdit(entry)}
-                className="bg-[#1F232D] hover:bg-[#2A2F3D] text-slate-200 border border-slate-700/60 px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer shadow-xs"
+                className="bg-[#1F232D] hover:bg-[#2A2F3D] text-slate-200 border border-slate-700/60 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                 aria-label="Edit entry"
               >
                 <Edit3 className="w-4 h-4 text-slate-400" />
@@ -172,7 +185,7 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsDeleteConfirmOpen(true)}
-                className="bg-rose-950/30 hover:bg-rose-900/50 text-rose-300 border border-rose-800/40 p-2.5 rounded-xl transition-colors cursor-pointer"
+                className="bg-rose-950/30 hover:bg-rose-900/50 text-rose-300 border border-rose-800/40 p-2 sm:p-2.5 rounded-xl transition-colors cursor-pointer"
                 title="Delete item"
                 aria-label="Delete entry"
               >

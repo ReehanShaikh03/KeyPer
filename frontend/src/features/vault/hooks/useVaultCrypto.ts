@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { VaultItemData } from '../types/vault.types';
 import { authApi, authStorage } from '@/features/auth/services/authApi';
 
@@ -45,10 +45,21 @@ function base64ToBuffer(base64: string): ArrayBuffer {
   return bytes.buffer;
 }
 
+import { useAuth } from '@/features/auth/context/AuthContext';
+
 export function useVaultCrypto() {
+  const { setVaultLocked, isVaultLocked } = useAuth();
   const [cryptoKey, setCryptoKey] = useState<CryptoKey | null>(null);
-  const [isUnlocked, setIsUnlocked] = useState<boolean>(true);
   const [userSalt, setUserSalt] = useState<string>('keyper_default_salt_2026');
+
+  // Automatically clear key when vault is locked in AuthContext
+  useEffect(() => {
+    if (isVaultLocked) {
+      setCryptoKey(null);
+    }
+  }, [isVaultLocked]);
+
+  const isUnlocked = !isVaultLocked;
 
   // Unlock vault by deriving client-side AES-GCM key in memory after DB verification
   const unlockVault = useCallback(async (masterPassword: string, customSalt?: string) => {
@@ -66,19 +77,19 @@ export function useVaultCrypto() {
       const derived = await deriveKey(masterPassword, salt);
       setCryptoKey(derived);
       setUserSalt(salt);
-      setIsUnlocked(true);
+      setVaultLocked(false);
       return true;
     } catch (err) {
       console.warn('Master password DB verification failed:', err);
       return false;
     }
-  }, [userSalt]);
+  }, [userSalt, setVaultLocked]);
 
-  // Lock vault by clearing derived key from memory
+  // Lock vault by clearing derived key from memory and broadcasting lock
   const lockVault = useCallback(() => {
     setCryptoKey(null);
-    setIsUnlocked(false);
-  }, []);
+    setVaultLocked(true);
+  }, [setVaultLocked]);
 
   // Encrypt plaintext payload into Base64 ciphertext and IV
   const encryptData = useCallback(

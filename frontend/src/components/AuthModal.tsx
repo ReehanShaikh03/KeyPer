@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShieldCheck, Lock, Mail, ArrowRight, KeyRound, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { authApi, authStorage } from '@/features/auth/services/authApi';
+import { useAuth } from '@/features/auth/context/AuthContext';
 import { TwoFactorVerify } from '@/features/auth/components/TwoFactorVerify';
 
 interface AuthModalProps {
@@ -15,6 +16,7 @@ interface AuthModalProps {
 type ModalViewMode = 'signin' | 'signup' | '2fa' | 'recovery';
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'signup', onClose, onSuccess }) => {
+  const { login } = useAuth();
   const [mode, setMode] = useState<ModalViewMode>(initialMode);
   const [email, setEmail] = useState('');
   const [masterPassword, setMasterPassword] = useState('');
@@ -83,6 +85,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'sig
           return;
         }
 
+        const token = loginRes.accessToken || loginRes.token || 'keyper_token_' + Date.now();
+        login(token, {
+          id: loginRes.user?.id || `user-${Date.now()}`,
+          email: loginRes.user?.email || email,
+          isTwoFactorEnabled: loginRes.user?.isTwoFactorEnabled,
+        });
+
         triggerSuccessAndEnterVault();
       } else if (mode === 'signin') {
         if (!email || !masterPassword) return;
@@ -104,6 +113,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'sig
           setMode('2fa');
           return;
         }
+
+        const token = res.accessToken || res.token || 'keyper_token_' + Date.now();
+        login(token, {
+          id: res.user?.id || `user-${Date.now()}`,
+          email: res.user?.email || email,
+          isTwoFactorEnabled: res.user?.isTwoFactorEnabled,
+        });
 
         triggerSuccessAndEnterVault();
       } else if (mode === 'recovery') {
