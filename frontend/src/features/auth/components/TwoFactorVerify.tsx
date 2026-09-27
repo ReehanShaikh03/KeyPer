@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, RefreshCw, ArrowLeft, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { authApi } from '../services/authApi';
 
 interface TwoFactorVerifyProps {
@@ -123,16 +122,10 @@ export const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = ({
     try {
       await authApi.verifyLoginOtp(tempToken, code);
       setIsSuccessWave(true);
-      confetti({
-        particleCount: 90,
-        spread: 75,
-        origin: { y: 0.6 },
-        colors: ['#6366F1', '#14B8A6', '#10B981'],
-      });
 
       setTimeout(() => {
         onSuccess();
-      }, 900);
+      }, 300);
     } catch (err: any) {
       setError(err.message || 'Invalid 6-digit code. Please check and try again.');
       setIsShaking(true);

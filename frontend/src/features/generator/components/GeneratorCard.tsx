@@ -122,40 +122,42 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: customEasing }}
-        className="bg-[#1A1D24] border border-slate-800/80 rounded-2xl p-6 md:p-7 shadow-2xl shadow-black/40 space-y-6"
+        className="bg-[#1A1D24] border border-slate-800/80 rounded-2xl p-4 sm:p-6 md:p-7 shadow-2xl shadow-black/40 space-y-5 sm:space-y-6"
       >
         {/* Preset Selector & Action Row */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#14171F] p-3 rounded-2xl border border-slate-800/80">
-          <div className="flex items-center gap-2 flex-1 min-w-[220px]">
-            <Sliders className="w-4 h-4 text-indigo-400 shrink-0" />
-            <div className="flex-1">
+        <div className="flex flex-col gap-3 bg-[#14171F] p-3.5 rounded-2xl border border-slate-800/80">
+          <div className="flex items-center gap-2.5 w-full">
+            <Sliders className="w-4 h-4 text-indigo-400 shrink-0 self-center" />
+            <div className="flex-1 min-w-0">
               <label className="block text-[11px] font-semibold text-slate-400 mb-1">Select Preset</label>
               <CustomSelect
                 value={selectedPresetId}
                 onChange={handleSelectPreset}
                 options={builtInPresetOptions}
                 ariaLabel="Select password generator preset"
-                className="bg-[#181B24] border-slate-800 text-xs py-1.5"
+                className="bg-[#181B24] border-slate-800 text-xs py-1.5 w-full"
               />
             </div>
           </div>
 
           {onOpenSavePreset && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onOpenSavePreset}
-              className="text-xs h-9 px-3.5 border-slate-700/80 hover:bg-slate-800 text-slate-200 flex items-center gap-1.5 shrink-0 self-end sm:self-auto cursor-pointer"
-            >
-              <Bookmark className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Save Preset</span>
-            </Button>
+            <div className="w-full pt-0.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onOpenSavePreset}
+                className="w-full text-xs h-9 px-3.5 border-slate-700/80 hover:bg-slate-800 text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Bookmark className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Save Preset</span>
+              </Button>
+            </div>
           )}
         </div>
 
         {/* Mode Selector Tabs (Password / Passphrase / PIN) */}
         <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
-          <div className="flex items-center gap-1.5 bg-[#14171F] p-1 rounded-xl border border-slate-800/60 w-full sm:w-auto">
+          <div className="flex items-center gap-1 bg-[#14171F] p-1 rounded-xl border border-slate-800/60 w-full">
             {(
               [
                 { mode: 'password', label: 'Password', icon: Key },
@@ -173,14 +175,14 @@ export const GeneratorCard: React.FC<GeneratorCardProps> = ({
                     setSelectedPresetId('custom');
                     onChangeOptions({ mode: item.mode as GeneratorMode });
                   }}
-                  className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3.5 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium transition-all duration-200 cursor-pointer min-w-0 ${
                     isActive
                       ? 'bg-[#6366F1] text-white shadow-md shadow-indigo-950/40'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-[#1C202B]'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{item.label}</span>
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">{item.label}</span>
                 </button>
               );
             })}

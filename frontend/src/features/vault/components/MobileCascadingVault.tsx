@@ -64,9 +64,32 @@ export const MobileCascadingVault: React.FC<MobileCascadingVaultProps> = ({
   calculateStrength,
   isLoading,
 }) => {
-  const [step, setStep] = useState<MobileStep>('items');
+  const [step, setStep] = useState<MobileStep>('folders');
   const [direction, setDirection] = useState<number>(1);
   const [isFolderDropdownOpen, setIsFolderDropdownOpen] = useState(false);
+
+  // Sync state with browser history so browser back button traverses detail -> items -> folders
+  React.useEffect(() => {
+    if (!window.history.state?.vaultStep) {
+      window.history.replaceState({ vaultStep: 'folders' }, '', window.location.href);
+    }
+
+    const handlePopState = (e: PopStateEvent) => {
+      const targetStep: MobileStep = e.state?.vaultStep || 'folders';
+      setStep((currentStep) => {
+        if (targetStep === currentStep) return currentStep;
+        const order: Record<MobileStep, number> = { folders: 0, items: 1, detail: 2 };
+        const nextDir = (order[targetStep] ?? 0) < (order[currentStep] ?? 0) ? -1 : 1;
+        setDirection(nextDir);
+        return targetStep;
+      });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   // Navigate forward to a folder's item list
   const handleSelectFolder = (folderName: string) => {
@@ -75,6 +98,7 @@ export const MobileCascadingVault: React.FC<MobileCascadingVaultProps> = ({
     if (step !== 'items') {
       setDirection(1);
       setStep('items');
+      window.history.pushState({ vaultStep: 'items' }, '', window.location.href);
     }
   };
 
@@ -83,15 +107,20 @@ export const MobileCascadingVault: React.FC<MobileCascadingVaultProps> = ({
     setSelectedEntryId(id);
     setDirection(1);
     setStep('detail');
+    window.history.pushState({ vaultStep: 'detail' }, '', window.location.href);
   };
 
   // Navigate backward in 3-step hierarchy (detail -> items -> folders)
   const handleGoBack = () => {
-    setDirection(-1);
-    if (step === 'detail') {
-      setStep('items');
-    } else if (step === 'items') {
-      setStep('folders');
+    if (window.history.state?.vaultStep) {
+      window.history.back();
+    } else {
+      setDirection(-1);
+      if (step === 'detail') {
+        setStep('items');
+      } else if (step === 'items') {
+        setStep('folders');
+      }
     }
   };
 

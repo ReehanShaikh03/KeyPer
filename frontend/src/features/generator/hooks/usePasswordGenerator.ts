@@ -253,7 +253,17 @@ export function usePasswordGenerator(initialOptions = DEFAULT_GENERATOR_OPTIONS)
   }, [password]);
 
   const updateOptions = useCallback((newOpts: Partial<GeneratorOptions>) => {
-    setOptions((prev) => ({ ...prev, ...newOpts }));
+    setOptions((prev) => {
+      const updated = { ...prev, ...newOpts };
+      if (updated.mode === 'pin') {
+        if (updated.length > 12) updated.length = 6;
+        if (updated.length < 4) updated.length = 4;
+      } else if (updated.mode === 'password') {
+        if (updated.length < 8) updated.length = 16;
+        if (updated.length > 64) updated.length = 64;
+      }
+      return updated;
+    });
   }, []);
 
   const clearHistory = useCallback(() => {

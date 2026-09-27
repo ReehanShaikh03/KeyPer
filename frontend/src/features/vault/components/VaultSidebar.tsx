@@ -126,7 +126,7 @@ export const VaultSidebar: React.FC<VaultSidebarProps> = ({
                 }}
                 whileHover={{ x: 2 }}
                 whileTap={{ scale: 0.98 }}
-                className={`w-full relative flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${isDraggedOver
+                className={`w-full relative flex items-center justify-between px-3 py-2.5 rounded-xl text-base font-medium transition-all cursor-pointer ${isDraggedOver
                     ? 'bg-indigo-600/30 border-2 border-indigo-500 text-white scale-[1.02] shadow-lg shadow-indigo-900/40'
                     : isActive
                       ? 'text-white font-semibold'
