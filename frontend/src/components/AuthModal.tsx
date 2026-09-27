@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShieldCheck, Lock, Mail, ArrowRight, KeyRound, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { authApi, authStorage } from '@/features/auth/services/authApi';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { TwoFactorVerify } from '@/features/auth/components/TwoFactorVerify';
@@ -43,12 +42,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'sig
   };
 
   const triggerSuccessAndEnterVault = () => {
-    confetti({
-      particleCount: 80,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#a855f7', '#6366f1', '#38bdf8'],
-    });
     onClose();
     if (onSuccess) {
       onSuccess();

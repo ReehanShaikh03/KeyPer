@@ -62,83 +62,72 @@ export const SecurityWhitepaperSection: React.FC = () => {
   ];
 
   return (
-    <section id="whitepaper" ref={containerRef} style={{ padding: '80px 24px', position: 'relative' }}>
-      <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
+    <section id="whitepaper" ref={containerRef} className="py-12 sm:py-20 px-4 sm:px-6 relative overflow-hidden">
+      <div className="max-w-6xl mx-auto w-full">
         
         <div
           ref={cardRef}
-          className="glass-bento"
-          style={{
-            padding: '44px 36px',
-            background: 'linear-gradient(135deg, rgba(18, 22, 34, 0.9) 0%, rgba(13, 16, 26, 0.95) 100%)',
-            border: '1px solid rgba(168, 85, 247, 0.25)',
-            borderRadius: '24px',
-            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
-          }}
+          className="glass-bento p-5 sm:p-8 md:p-11 rounded-3xl shadow-2xl border border-purple-500/25 bg-gradient-to-br from-[#121622]/90 to-[#0D101A]/95"
         >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '36px', alignItems: 'center' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
             {/* Left Description */}
-            <div>
-              <div className="badge-pill-sleek" style={{ marginBottom: '16px' }}>
+            <div className="lg:col-span-6 space-y-4">
+              <div className="badge-pill-sleek inline-flex items-center gap-2 mb-2">
                 <Lock size={13} color="#c084fc" />
                 <span>Audited Cryptography</span>
               </div>
-              <h2 style={{ fontSize: 'clamp(1.7rem, 3vw, 2.3rem)', fontWeight: 800, color: '#ffffff', marginBottom: '14px' }}>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
                 Built on provable security
               </h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.96rem', lineHeight: 1.6, marginBottom: '22px' }}>
+              <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
                 KeyPer operates under a strict zero-knowledge paradigm. Your master key is never transmitted or logged.
               </p>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#cbd5e1', fontSize: '0.9rem' }}>
-                  <CheckCircle2 size={16} color="#10b981" />
+              <div className="space-y-2.5 pt-1 pb-2">
+                <div className="flex items-center gap-2.5 text-slate-300 text-xs sm:text-sm">
+                  <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
                   <span>100% Independently audited</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#cbd5e1', fontSize: '0.9rem' }}>
-                  <CheckCircle2 size={16} color="#10b981" />
+                <div className="flex items-center gap-2.5 text-slate-300 text-xs sm:text-sm">
+                  <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
                   <span>Open-source encryption core</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#cbd5e1', fontSize: '0.9rem' }}>
-                  <CheckCircle2 size={16} color="#10b981" />
+                <div className="flex items-center gap-2.5 text-slate-300 text-xs sm:text-sm">
+                  <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
                   <span>SOC2 Type II & ISO 27001 Certified</span>
                 </div>
               </div>
 
-              <a
-                href="#whitepaper"
-                className="btn-secondary"
-                style={{ fontSize: '0.88rem', padding: '10px 20px', borderRadius: '8px' }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  alert('KeyPer Security Whitepaper v2026 loaded: Zero-Knowledge Architecture verified.');
-                }}
-              >
-                Read Security Whitepaper
-                <ArrowUpRight size={15} />
-              </a>
+              <div className="pt-2">
+                <a
+                  href="#whitepaper"
+                  className="btn-secondary inline-flex items-center gap-2 text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    alert('KeyPer Security Whitepaper v2026 loaded: Zero-Knowledge Architecture verified.');
+                  }}
+                >
+                  <span>Read Security Whitepaper</span>
+                  <ArrowUpRight size={15} />
+                </a>
+              </div>
             </div>
 
             {/* Right Tech Specs Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
               {specs.map((item, idx) => (
                 <div
                   key={idx}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.07)',
-                    borderRadius: '14px',
-                    padding: '18px',
-                  }}
+                  className="bg-white/[0.03] border border-white/[0.08] hover:border-purple-500/30 rounded-2xl p-4 sm:p-4.5 transition-all duration-200 min-w-0"
                 >
-                  <h4 style={{ color: '#c084fc', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px' }}>
+                  <h4 className="text-purple-400 text-[11px] sm:text-xs uppercase font-bold tracking-wider mb-1 truncate">
                     {item.title}
                   </h4>
-                  <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.92rem', marginBottom: '4px' }}>
+                  <div className="text-white font-bold text-sm sm:text-base mb-1.5 leading-snug break-words">
                     {item.detail}
                   </div>
-                  <p style={{ color: '#64748b', fontSize: '0.8rem', lineHeight: 1.4 }}>
+                  <p className="text-slate-400 text-xs leading-relaxed">
                     {item.desc}
                   </p>
                 </div>

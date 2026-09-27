@@ -197,6 +197,16 @@ export const BentoScrollSection: React.FC = () => {
           <AnimatePresence mode="wait">
             <motion.div
               key={centerCard.id}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_e, info) => {
+                if (info.offset.x < -40 || info.velocity.x < -300) {
+                  handleNext();
+                } else if (info.offset.x > 40 || info.velocity.x > 300) {
+                  handlePrev();
+                }
+              }}
               initial={{ opacity: 0, scale: 0.94, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: -15 }}
@@ -209,6 +219,8 @@ export const BentoScrollSection: React.FC = () => {
                 borderRadius: '36px',
                 position: 'relative',
                 overflow: 'hidden',
+                touchAction: 'pan-y',
+                cursor: 'grab',
                 background: isHovered
                   ? `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, ${centerCard.color}35 0%, rgba(20, 25, 42, 0.92) 70%)`
                   : centerCard.gradient,
@@ -354,64 +366,23 @@ export const BentoScrollSection: React.FC = () => {
         </div>
 
         {/* Small Topic Box & Navigation Buttons */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '18px',
-            marginTop: '40px',
-            flexWrap: 'wrap',
-          }}
-        >
+        <div className="flex flex-row flex-nowrap items-center justify-center gap-2.5 sm:gap-4 mt-8 sm:mt-10 px-2 w-full">
           {/* Prev Button */}
           <button
             onClick={handlePrev}
-            style={{
-              width: '44px',
-              height: '44px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
-              e.currentTarget.style.transform = 'scale(1.08)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
+            className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/5 border border-white/12 text-white flex items-center justify-center cursor-pointer shrink-0 transition-all hover:bg-white/12 hover:scale-105 active:scale-95"
             aria-label="Previous Slide"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={18} />
           </button>
 
           {/* Main Topic Box */}
-          <div
-            style={{
-              background: 'rgba(15, 18, 28, 0.85)',
-              border: '1px solid rgba(168, 85, 247, 0.3)',
-              borderRadius: '9999px',
-              padding: '12px 28px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '14px',
-              boxShadow: '0 8px 25px rgba(0, 0, 0, 0.5)',
-              backdropFilter: 'blur(12px)',
-            }}
-          >
-            <span className="font-mono" style={{ fontSize: '0.82rem', color: '#a855f7', fontWeight: 700 }}>
+          <div className="bg-[#0F121C]/90 border border-purple-500/40 rounded-full px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3.5 shadow-xl backdrop-blur-md min-w-0 max-w-[280px] sm:max-w-none shrink">
+            <span className="font-mono text-xs sm:text-sm text-purple-400 font-bold shrink-0">
               0{currentIndex + 1} / 0{features.length}
             </span>
-            <div style={{ height: '14px', width: '1px', background: 'rgba(255, 255, 255, 0.15)' }} />
-            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+            <div className="h-3.5 w-[1px] bg-white/15 shrink-0" />
+            <span className="text-xs sm:text-sm font-bold text-white truncate">
               {centerCard.topic}
             </span>
           </div>
@@ -419,30 +390,10 @@ export const BentoScrollSection: React.FC = () => {
           {/* Next Button */}
           <button
             onClick={handleNext}
-            style={{
-              width: '44px',
-              height: '44px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
-              e.currentTarget.style.transform = 'scale(1.08)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
+            className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/5 border border-white/12 text-white flex items-center justify-center cursor-pointer shrink-0 transition-all hover:bg-white/15 hover:scale-105 active:scale-95"
             aria-label="Next Slide"
           >
-            <ChevronRight size={20} />
+            <ChevronRight size={18} />
           </button>
         </div>
 

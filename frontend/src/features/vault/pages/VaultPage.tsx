@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
-  Lock,
-  Unlock,
   Key,
   Sliders,
   FileText,
@@ -80,32 +78,8 @@ export const VaultPage: React.FC<VaultPageProps> = ({ onLogout }) => {
             </div>
             <span className="text-base">KeyPer</span>
           </div>
-          <span className="text-slate-600 text-xs font-mono">/</span>
-          <span className="text-xs text-slate-400 font-medium">Vault</span>
         </div>
 
-        <div className="flex items-center gap-3">
-          {isUnlocked ? (
-            <button
-              onClick={() => {
-                lockVault();
-              }}
-              className="bg-emerald-950/40 border border-emerald-600/40 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 hover:bg-rose-900/40 hover:text-rose-400 hover:border-rose-600/40 transition-colors cursor-pointer"
-              title="Click to lock vault and require Master Password"
-            >
-              <Unlock className="w-3.5 h-3.5" />
-              <span>Unlocked (Lock)</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => lockVault()}
-              className="bg-rose-950/40 border border-rose-600/40 text-rose-400 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 hover:bg-rose-900/40 transition-colors cursor-pointer"
-            >
-              <Lock className="w-3.5 h-3.5" />
-              <span>Locked</span>
-            </button>
-          )}
-        </div>
       </header>
 
       {/* Main Container */}

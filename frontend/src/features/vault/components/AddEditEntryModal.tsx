@@ -158,7 +158,7 @@ export const AddEditEntryModal: React.FC<AddEditEntryModalProps> = ({
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-400 mb-1.5">
                   Title *
@@ -185,66 +185,58 @@ export const AddEditEntryModal: React.FC<AddEditEntryModalProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Website URL</label>
-                <input
-                  type="text"
-                  placeholder="e.g. netflix.com"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="w-full bg-[#0F1115] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                  Username / Email
-                </label>
-                <input
-                  type="text"
-                  placeholder="user@example.com"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-[#0F1115] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 font-mono transition-colors"
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 mb-1.5">Website URL</label>
+              <input
+                type="text"
+                placeholder="e.g. netflix.com"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="w-full bg-[#0F1115] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition-colors"
+              />
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-slate-400">
-                  Password *
-                </label>
-                <div className="flex items-center gap-1.5 bg-[#0F1115] p-1 rounded-lg border border-slate-800">
-                  {[
-                    { id: 'strong', label: 'Strong' },
-                    { id: 'passphrase', label: 'Passphrase' },
-                    { id: 'pin', label: 'PIN' },
-                  ].map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setGenType(t.id as 'strong' | 'passphrase' | 'pin')}
-                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                        genType === t.id
-                          ? 'bg-[#6366F1] text-white shadow-xs'
-                          : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={handleGeneratePassword}
-                    className="ml-1 px-2 py-1 rounded text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 cursor-pointer"
-                    title="Generate Password"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    <span>Generate</span>
-                  </button>
+              <label className="block text-xs font-semibold text-slate-400 mb-1.5">
+                Username / Email
+              </label>
+              <input
+                type="text"
+                placeholder="user@example.com"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full bg-[#0F1115] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 font-mono transition-colors"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                <div className="flex items-center gap-2 min-w-0">
+                  <label className="block text-xs font-semibold text-slate-400 shrink-0">
+                    Password *
+                  </label>
+                  <CustomSelect
+                    value={genType}
+                    onChange={(val) => setGenType(val as 'strong' | 'passphrase' | 'pin')}
+                    options={[
+                      { value: 'strong', label: 'Strong' },
+                      { value: 'passphrase', label: 'Passphrase' },
+                      { value: 'pin', label: 'PIN' },
+                    ]}
+                    ariaLabel="Select Password Type"
+                    className="bg-[#0F1115] border-slate-800 text-xs py-1 px-2.5"
+                  />
                 </div>
+
+                <button
+                  type="button"
+                  onClick={handleGeneratePassword}
+                  className="bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shrink-0"
+                  title="Generate Password"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Generate</span>
+                </button>
               </div>
 
               <input

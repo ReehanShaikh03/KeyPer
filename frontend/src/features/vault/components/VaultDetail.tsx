@@ -10,7 +10,6 @@ import {
   RefreshCw,
   ExternalLink,
   Clock,
-  ArrowLeft,
 } from 'lucide-react';
 import type { DecryptedVaultEntry, StrengthAnalysis } from '../types/vault.types';
 
@@ -29,7 +28,6 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
   onEdit,
   onDelete,
   calculateStrength,
-  onBack,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [countdownSec, setCountdownSec] = useState<number | null>(null);
@@ -135,16 +133,6 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
           transition={{ duration: 0.3, ease: EASE_CUSTOM }}
           className="max-w-2xl mx-auto w-full space-y-6"
         >
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="md:hidden flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white bg-[#1A1D27] border border-slate-800 rounded-xl px-3 py-2 transition-colors cursor-pointer w-fit mb-2"
-            >
-              <ArrowLeft className="w-4 h-4 text-indigo-400" />
-              <span>Back to items</span>
-            </button>
-          )}
-
           {/* Detail Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-5">
             <div className="flex items-center gap-3 min-w-0 flex-1 w-full sm:w-auto">
@@ -157,15 +145,15 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
                 {initials}
               </motion.div>
               <div className="min-w-0 flex-1">
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">{title}</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate">{title}</h2>
                 <a
                   href={url.startsWith('http') ? url : `https://${url}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-1 mt-0.5 min-w-0"
+                  className="text-xs sm:text-sm text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-1 mt-0.5 min-w-0"
                 >
                   <span className="truncate">{url}</span>
-                  <ExternalLink className="w-3 h-3 shrink-0" />
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                 </a>
               </div>
             </div>
@@ -198,13 +186,13 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
           <div className="bg-[#181B22] border border-slate-800/90 rounded-2xl p-5 space-y-5 shadow-lg">
             {/* Username Field */}
             <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-2">Username</label>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">Username</label>
               <div className="relative flex items-center">
                 <input
                   type="text"
                   readOnly
                   value={username}
-                  className="w-full bg-[#111319] border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 font-mono focus:outline-none pr-12 transition-colors"
+                  className="w-full bg-[#111319] border border-slate-800 rounded-xl px-4 py-3 text-base text-slate-100 font-mono focus:outline-none pr-12 transition-colors"
                 />
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -228,7 +216,7 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
             {/* Password Field */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-semibold text-slate-400">Password</label>
+                <label className="text-sm font-semibold text-slate-300">Password</label>
                 {showPassword && countdownSec !== null && (
                   <motion.span
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -258,7 +246,7 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
                   type={showPassword ? 'text' : 'password'}
                   readOnly
                   value={password}
-                  className="w-full bg-[#111319] border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 font-mono focus:outline-none pr-20 transition-colors"
+                  className="w-full bg-[#111319] border border-slate-800 rounded-xl px-4 py-3 text-base text-slate-100 font-mono focus:outline-none pr-20 transition-colors"
                 />
                 <div className="absolute right-3 flex items-center gap-1">
                   <motion.button
@@ -300,7 +288,7 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
                     transition={{ duration: 0.4, ease: EASE_CUSTOM }}
                   />
                 </div>
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-400">Strength</span>
                   <span className="font-semibold" style={{ color: strength.color }}>
                     {strength.label}
@@ -321,14 +309,14 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
 
             {/* Encrypted Notes */}
             <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-2">
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
                 Notes (encrypted)
               </label>
               <textarea
                 readOnly
                 rows={3}
                 value={notes || 'No notes saved for this entry.'}
-                className="w-full bg-[#111319] border border-slate-800 rounded-xl p-3 text-sm text-slate-300 focus:outline-none resize-none font-sans"
+                className="w-full bg-[#111319] border border-slate-800 rounded-xl p-3 text-base text-slate-100 focus:outline-none resize-none font-sans"
               />
             </div>
           </div>
@@ -336,22 +324,22 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
           {/* Metadata Footer Card */}
           <div className="bg-[#14171F] border border-slate-800/60 rounded-2xl p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-slate-400">
             <div>
-              <div className="text-slate-500 font-medium mb-1">Folder</div>
-              <div className="font-semibold text-slate-200">{category}</div>
+              <div className="text-slate-400 font-medium mb-1">Folder</div>
+              <div className="font-semibold text-sm text-slate-100">{category}</div>
             </div>
             <div>
-              <div className="text-slate-500 font-medium mb-1">Last used</div>
-              <div className="font-semibold text-slate-200">{lastUsed || '4d ago'}</div>
+              <div className="text-slate-400 font-medium mb-1">Last used</div>
+              <div className="font-semibold text-sm text-slate-100">{lastUsed || '4d ago'}</div>
             </div>
             <div>
-              <div className="text-slate-500 font-medium mb-1">Last modified</div>
-              <div className="font-semibold text-slate-200">
+              <div className="text-slate-400 font-medium mb-1">Last modified</div>
+              <div className="font-semibold text-sm text-slate-100">
                 {new Date(updatedAt).toLocaleDateString()}
               </div>
             </div>
             <div>
-              <div className="text-slate-500 font-medium mb-1">Created</div>
-              <div className="font-semibold text-slate-200">
+              <div className="text-slate-400 font-medium mb-1">Created</div>
+              <div className="font-semibold text-sm text-slate-100">
                 {new Date(createdAt).toLocaleDateString()}
               </div>
             </div>
