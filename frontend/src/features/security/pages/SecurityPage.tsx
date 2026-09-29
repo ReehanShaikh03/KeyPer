@@ -8,9 +8,6 @@ import {
   Lock,
 } from 'lucide-react';
 import { useSecurity } from '../hooks/useSecurity';
-import { useVault } from '@/features/vault/hooks/useVault';
-import { useVaultCrypto } from '@/features/vault/hooks/useVaultCrypto';
-import { vaultApi } from '@/features/vault/services/vaultApi';
 import { SecurityTrendChart } from '../components/SecurityTrendChart';
 import { SecurityHexagonGraph } from '../components/SecurityHexagonGraph';
 import { QuickFixModal } from '../components/QuickFixModal';
@@ -20,7 +17,7 @@ interface SecurityPageProps {
   onNavigateToVault?: (entryId: string) => void;
 }
 
-export const SecurityPage: React.FC<SecurityPageProps> = () => {
+export const SecurityPage: React.FC<SecurityPageProps> = ({ onNavigateToVault }) => {
   const {
     report,
     loading,
@@ -33,24 +30,11 @@ export const SecurityPage: React.FC<SecurityPageProps> = () => {
     runAudit,
   } = useSecurity();
 
-  const { allEntries: entries, reloadVault } = useVault();
-  const { encryptData } = useVaultCrypto();
-
-  const handleSaveFix = async (item: VaultSecurityItem, newPassword: string) => {
-    try {
-      const matchingEntry = entries.find((e) => e.id === item.id);
-      const title = matchingEntry?.title || item.title;
-      const category = matchingEntry?.category || 'General';
-      const username = matchingEntry?.decryptedData.username || item.username;
-      const url = matchingEntry?.decryptedData.url || item.domain || '';
-      const notes = matchingEntry?.decryptedData.notes || '';
-
-      const { iv, ciphertext } = await encryptData({ username, password: newPassword, url, notes });
-      await vaultApi.update(item.id, { title, category, iv, ciphertext });
-      await reloadVault();
-      await runAudit();
-    } catch (err) {
-      console.error('Failed to update vault entry password in DB:', err);
+  const handleFixClick = (item: VaultSecurityItem) => {
+    if (onNavigateToVault) {
+      onNavigateToVault(item.id);
+    } else {
+      setQuickFixItem(item);
     }
   };
 
@@ -122,7 +106,12 @@ export const SecurityPage: React.FC<SecurityPageProps> = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Card: Score Trend Indicator matching Reference Image 1 */}
             <div className="lg:col-span-6 bg-[#1A1D24] border border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden shadow-lg">
-              <SecurityTrendChart trend={report?.scoreTrend || []} currentScore={report?.overallScore || 82} />
+              <SecurityTrendChart 
+                currentScore={report?.overallScore || 82} 
+                weakCount={report?.weakCount || 0}
+                reusedCount={report?.reusedCount || 0}
+                breachedCount={report?.breachedCount || 0}
+              />
             </div>
 
             {/* Right Card: 6-Axis Hexagonal Security Radar Graph matching Reference Image 2 */}
@@ -273,7 +262,7 @@ export const SecurityPage: React.FC<SecurityPageProps> = () => {
                           </p>
                         </div>
                         <button
-                          onClick={() => setQuickFixItem(item)}
+                          onClick={() => handleFixClick(item)}
                           className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 bg-indigo-950/40 border border-indigo-800/40 px-3 py-1.5 rounded-lg hover:bg-indigo-900/60 transition-all shrink-0 cursor-pointer"
                         >
                           Fix now
@@ -333,7 +322,7 @@ export const SecurityPage: React.FC<SecurityPageProps> = () => {
                                   <span className="text-[10px] text-slate-400 font-mono truncate block">{item.username}</span>
                                 </div>
                                 <button
-                                  onClick={() => setQuickFixItem(item)}
+                                  onClick={() => handleFixClick(item)}
                                   className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 bg-indigo-950/40 border border-indigo-800/40 px-2.5 py-1 rounded-md hover:bg-indigo-900/60 transition-all shrink-0 cursor-pointer"
                                 >
                                   Fix now
@@ -385,7 +374,7 @@ export const SecurityPage: React.FC<SecurityPageProps> = () => {
                           </p>
                         </div>
                         <button
-                          onClick={() => setQuickFixItem(item)}
+                          onClick={() => handleFixClick(item)}
                           className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 bg-indigo-950/40 border border-indigo-800/40 px-3 py-1.5 rounded-lg hover:bg-indigo-900/60 transition-all shrink-0 cursor-pointer"
                         >
                           Fix now
@@ -410,10 +399,8 @@ export const SecurityPage: React.FC<SecurityPageProps> = () => {
       <QuickFixModal
         item={quickFixItem}
         onClose={() => setQuickFixItem(null)}
-        onSaveFix={async (_id, newPassword) => {
-          if (quickFixItem) {
-            await handleSaveFix(quickFixItem, newPassword);
-          }
+        onSaveFix={() => {
+          setQuickFixItem(null);
         }}
       />
     </div>

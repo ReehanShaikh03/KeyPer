@@ -61,149 +61,96 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
 
   return (
     <>
-      {/* Curved Hump Floating Glass Navigation Bar (Visible on mobile screens < md) */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 md:hidden w-[calc(100%-2rem)] max-w-[360px] h-[58px] select-none">
-        {/* Backdrop & SVG Background Shell with Center Upward Hump */}
-        <div className="absolute inset-0 backdrop-blur-xl drop-shadow-[0_16px_36px_rgba(0,0,0,0.8)]">
-          <svg
-            className="w-full h-full pointer-events-none"
-            viewBox="0 0 360 58"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient id="navHumpBg" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#181924" stopOpacity="0.95" />
-                <stop offset="100%" stopColor="#101119" stopOpacity="0.98" />
-              </linearGradient>
-              <linearGradient id="navHumpBorder" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="rgba(255,255,255,0.1)" />
-                <stop offset="50%" stopColor="rgba(168,85,247,0.4)" />
-                <stop offset="100%" stopColor="rgba(255,255,255,0.1)" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M 26,10 L 134,10 C 152,10 162,0 180,0 C 198,0 208,10 226,10 L 334,10 A 24,24 0 0,1 358,34 A 24,24 0 0,1 334,58 L 26,58 A 24,24 0 0,1 2,34 A 24,24 0 0,1 26,10 Z"
-              fill="url(#navHumpBg)"
-              stroke="url(#navHumpBorder)"
-              strokeWidth="1.2"
-            />
-          </svg>
-        </div>
-
-        {/* Center Action '+' Button Vertically Aligned with Icons */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-0.5 z-20">
-          <motion.button
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.92, rotate: 90 }}
-            onClick={onAddNew}
-            className="w-[42px] h-[42px] rounded-full bg-[#161724] border-2 border-[#8B5CF6] text-white flex items-center justify-center cursor-pointer shadow-[0_0_18px_rgba(139,92,246,0.65)] group transition-transform"
-            title="Add New Entry"
-            aria-label="Add new entry"
-          >
-            <Plus className="w-5 h-5 text-white stroke-[2.2] transition-transform group-active:scale-110" />
-          </motion.button>
-        </div>
-
-        {/* 5-Column Navigation Grid matching user sections */}
-        <nav
-          aria-label="Mobile Navigation"
-          className="relative z-10 grid grid-cols-5 h-full pt-1 items-center text-center"
+      {/* Glassmorphic Navigation Bar (Visible on mobile screens < md) */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 md:hidden w-[calc(100%-2rem)] max-w-[360px] h-[64px] bg-[#14171F]/70 backdrop-blur-lg border border-white/10 rounded-[20px] flex items-center shadow-[0_16px_36px_rgba(0,0,0,0.8)] overflow-hidden select-none px-2">
+        
+        {/* 1. Vault Section */}
+        <button
+          onClick={() => handleNavClick('Vault')}
+          className="relative flex-1 h-full flex flex-col items-center justify-center cursor-pointer group"
         >
-          {/* 1. Vault Section */}
-          <button
-            onClick={() => handleNavClick('Vault')}
-            className="flex flex-col items-center justify-center h-full cursor-pointer group"
-          >
-            <div className="relative flex flex-col items-center">
-              <Shield
-                className={`w-5 h-5 transition-all duration-200 ${
-                  activeTab === 'Vault' && !isMenuOpen
-                    ? 'text-white fill-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]'
-                    : 'text-slate-400 group-hover:text-slate-200'
-                }`}
-              />
-              {activeTab === 'Vault' && !isMenuOpen && (
-                <motion.div
-                  layoutId="mobileActiveDot"
-                  className="mt-1 w-1.5 h-1.5 bg-[#8B5CF6] rounded-full shadow-[0_0_8px_#8B5CF6]"
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </div>
-          </button>
+          {activeTab === 'Vault' && !isMenuOpen && (
+            <motion.div
+              layoutId="mobileActiveTop"
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[4px] bg-white rounded-b-md shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+            />
+          )}
+          <Shield
+            className={`w-6 h-6 relative z-10 transition-colors ${
+              activeTab === 'Vault' && !isMenuOpen
+                ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]'
+                : 'text-slate-500 group-hover:text-slate-300'
+            }`}
+          />
+        </button>
 
-          {/* 2. Generator Section */}
-          <button
-            onClick={() => handleNavClick('Generator')}
-            className="flex flex-col items-center justify-center h-full cursor-pointer group"
-          >
-            <div className="relative flex flex-col items-center">
-              <Key
-                className={`w-5 h-5 transition-all duration-200 ${
-                  activeTab === 'Generator' && !isMenuOpen
-                    ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]'
-                    : 'text-slate-400 group-hover:text-slate-200'
-                }`}
-              />
-              {activeTab === 'Generator' && !isMenuOpen && (
-                <motion.div
-                  layoutId="mobileActiveDot"
-                  className="mt-1 w-1.5 h-1.5 bg-[#8B5CF6] rounded-full shadow-[0_0_8px_#8B5CF6]"
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </div>
-          </button>
+        {/* 2. Generator Section */}
+        <button
+          onClick={() => handleNavClick('Generator')}
+          className="relative flex-1 h-full flex flex-col items-center justify-center cursor-pointer group"
+        >
+          {activeTab === 'Generator' && !isMenuOpen && (
+            <motion.div
+              layoutId="mobileActiveTop"
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[4px] bg-white rounded-b-md shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+            />
+          )}
+          <Key
+            className={`w-6 h-6 relative z-10 transition-colors ${
+              activeTab === 'Generator' && !isMenuOpen
+                ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]'
+                : 'text-slate-500 group-hover:text-slate-300'
+            }`}
+          />
+        </button>
 
-          {/* 3. Center Spacer for Plus Button */}
-          <div className="pointer-events-none" />
+        {/* 3. Add New Section */}
+        <button
+          onClick={onAddNew}
+          className="relative flex-1 h-full flex flex-col items-center justify-center cursor-pointer group"
+        >
+          <Plus className="w-7 h-7 relative z-10 transition-colors text-slate-400 group-hover:text-slate-200 group-active:scale-95" />
+        </button>
 
-          {/* 4. Security Section */}
-          <button
-            onClick={() => handleNavClick('Security')}
-            className="flex flex-col items-center justify-center h-full cursor-pointer group"
-          >
-            <div className="relative flex flex-col items-center">
-              <ShieldCheck
-                className={`w-5 h-5 transition-all duration-200 ${
-                  activeTab === 'Security' && !isMenuOpen
-                    ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]'
-                    : 'text-slate-400 group-hover:text-slate-200'
-                }`}
-              />
-              {activeTab === 'Security' && !isMenuOpen && (
-                <motion.div
-                  layoutId="mobileActiveDot"
-                  className="mt-1 w-1.5 h-1.5 bg-[#8B5CF6] rounded-full shadow-[0_0_8px_#8B5CF6]"
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </div>
-          </button>
+        {/* 4. Security Section */}
+        <button
+          onClick={() => handleNavClick('Security')}
+          className="relative flex-1 h-full flex flex-col items-center justify-center cursor-pointer group"
+        >
+          {activeTab === 'Security' && !isMenuOpen && (
+            <motion.div
+              layoutId="mobileActiveTop"
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[4px] bg-white rounded-b-md shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+            />
+          )}
+          <ShieldCheck
+            className={`w-6 h-6 relative z-10 transition-colors ${
+              activeTab === 'Security' && !isMenuOpen
+                ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]'
+                : 'text-slate-500 group-hover:text-slate-300'
+            }`}
+          />
+        </button>
 
-          {/* 5. Menu Section */}
-          <button
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-            className="flex flex-col items-center justify-center h-full cursor-pointer group"
-          >
-            <div className="relative flex flex-col items-center">
-              <Menu
-                className={`w-5 h-5 transition-all duration-200 ${
-                  isMenuOpen || activeTab === 'Settings' || activeTab === 'Audit log'
-                    ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]'
-                    : 'text-slate-400 group-hover:text-slate-200'
-                }`}
-              />
-              {(isMenuOpen || activeTab === 'Settings' || activeTab === 'Audit log') && (
-                <motion.div
-                  layoutId="mobileActiveDot"
-                  className="mt-1 w-1.5 h-1.5 bg-[#8B5CF6] rounded-full shadow-[0_0_8px_#8B5CF6]"
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </div>
-          </button>
-        </nav>
+        {/* 5. Menu Section */}
+        <button
+          onClick={() => setIsMenuOpen((prev) => !prev)}
+          className="relative flex-1 h-full flex flex-col items-center justify-center cursor-pointer group"
+        >
+          {(isMenuOpen || activeTab === 'Settings' || activeTab === 'Audit log') && (
+            <motion.div
+              layoutId="mobileActiveTop"
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[4px] bg-white rounded-b-md shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+            />
+          )}
+          <Menu
+            className={`w-6 h-6 relative z-10 transition-colors ${
+              isMenuOpen || activeTab === 'Settings' || activeTab === 'Audit log'
+                ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]'
+                : 'text-slate-500 group-hover:text-slate-300'
+            }`}
+          />
+        </button>
       </div>
 
       {/* Slide-Up Mobile Menu Drawer & Overlay */}

@@ -113,8 +113,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
   ];
 
   return (
-    <div className="flex-1 bg-[#0F1115] text-slate-100 overflow-y-auto custom-scrollbar p-4 sm:p-6 space-y-6 max-w-4xl mx-auto select-none">
-      {/* Header with Save Changes Button */}
+    <div className="flex-1 bg-[#0F1115] text-slate-100 overflow-y-auto custom-scrollbar p-4 sm:p-6 space-y-6 max-w-4xl mx-auto select-none overflow-x-hidden w-full">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">Settings</h1>
@@ -122,44 +122,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
             Manage your account credentials, security policies, and vault preferences
           </p>
         </div>
-
-        {/* Save Changes Floating Action (Visible on Appearance and Security tabs only) */}
-        {(activeTab === 'Appearance' || activeTab === 'Security') && (
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-            {savedSuccess && (
-              <motion.div
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0 }}
-                className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded-xl"
-              >
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Saved!</span>
-              </motion.div>
-            )}
-
-            <Button
-              onClick={handleSaveChanges}
-              disabled={!hasUnsavedChanges || saving}
-              className={`text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-2 cursor-pointer transition-all ${
-                hasUnsavedChanges
-                  ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/30'
-                  : 'bg-[#181B22] border border-slate-800 text-slate-500 cursor-not-allowed'
-              }`}
-            >
-              {saving ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Save className="w-3.5 h-3.5" />
-              )}
-              <span>{saving ? 'Saving...' : 'Save changes'}</span>
-            </Button>
-          </div>
-        )}
       </div>
 
-      {/* Segmented Pill Tabs */}
-      <div className="flex items-center gap-1 bg-[#14171F] p-1 rounded-xl border border-slate-800/80 w-fit">
+      {/* Grid Navigation Tabs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-[#14171F] p-2 rounded-xl border border-slate-800/80 w-full shrink-0">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.key;
           const Icon = tab.icon;
@@ -167,23 +133,57 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`relative px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
-                isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+              className={`relative px-4 py-3 rounded-lg text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 w-full ${
+                isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-[#1C1F2A]'
               }`}
             >
               {isActive && (
                 <motion.div
                   layoutId="activeSettingsTab"
-                  className="absolute inset-0 bg-[#262A36] rounded-lg border border-slate-700/60 shadow-xs"
+                  className="absolute inset-0 bg-[#262A36] rounded-lg border border-slate-700/60 shadow-md"
                   transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                 />
               )}
-              <Icon className={`w-3.5 h-3.5 relative z-10 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
+              <Icon className={`w-4 h-4 relative z-10 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
               <span className="relative z-10">{tab.label}</span>
             </button>
           );
         })}
       </div>
+
+      {/* Save Changes Action (Visible on Appearance and Security tabs only) */}
+      {(activeTab === 'Appearance' || activeTab === 'Security') && (
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+          {savedSuccess && (
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0 }}
+              className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded-xl"
+            >
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Saved!</span>
+            </motion.div>
+          )}
+
+          <Button
+            onClick={handleSaveChanges}
+            disabled={!hasUnsavedChanges || saving}
+            className={`text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-2 cursor-pointer transition-all ${
+              hasUnsavedChanges
+                ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/30'
+                : 'bg-[#181B22] border border-slate-800 text-slate-500 cursor-not-allowed'
+            }`}
+          >
+            {saving ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Save className="w-3.5 h-3.5" />
+            )}
+            <span>{saving ? 'Saving...' : 'Save changes'}</span>
+          </Button>
+        </div>
+      )}
 
       {/* Tab Panels */}
       <div className="space-y-6">

@@ -132,13 +132,13 @@ export function useSecurity() {
     // Calculate average password entropy (length & character variety)
     const avgEntropy = entries.length > 0
       ? Math.round(
-          entries.reduce((acc, curr) => {
-            const pw = curr.decryptedData.password || '';
-            const lengthBonus = Math.min(60, pw.length * 4);
-            const varietyBonus = (/[A-Z]/.test(pw) ? 10 : 0) + (/[0-9]/.test(pw) ? 15 : 0) + (/[^A-Za-z0-9]/.test(pw) ? 15 : 0);
-            return acc + Math.min(100, lengthBonus + varietyBonus);
-          }, 0) / totalCount
-        )
+        entries.reduce((acc, curr) => {
+          const pw = curr.decryptedData.password || '';
+          const lengthBonus = Math.min(60, pw.length * 4);
+          const varietyBonus = (/[A-Z]/.test(pw) ? 10 : 0) + (/[0-9]/.test(pw) ? 15 : 0) + (/[^A-Za-z0-9]/.test(pw) ? 15 : 0);
+          return acc + Math.min(100, lengthBonus + varietyBonus);
+        }, 0) / totalCount
+      )
       : 85;
 
     const freshnessScore = entries.length > 0 ? Math.min(100, Math.max(70, 100 - weakCount * 5)) : 90;
@@ -198,7 +198,7 @@ export function useSecurity() {
       // Async background fetch from NestJS audit endpoint
       securityApi.getAuditLogs().then((logs) => {
         if (logs && logs.length > 0) setAuditLogs(logs);
-      }).catch(() => {});
+      }).catch(() => { });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load report');
     } finally {
@@ -210,7 +210,7 @@ export function useSecurity() {
     setAuditing(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 650));
-      await securityApi.runSecurityAudit().catch(() => {});
+      await securityApi.runSecurityAudit().catch(() => { });
       const liveReport = await calculateReportFromEntries();
       setReport(liveReport);
     } catch (err) {
