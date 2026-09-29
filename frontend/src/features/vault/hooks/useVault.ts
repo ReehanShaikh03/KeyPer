@@ -161,6 +161,7 @@ export function useVault() {
         })
       );
       setEntries(decryptedList);
+      return decryptedList;
     } finally {
       setIsLoading(false);
     }

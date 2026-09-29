@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShieldAlert, Key, Check, RefreshCw } from 'lucide-react';
 import type { VaultSecurityItem } from '../types/security.types';
@@ -12,19 +12,29 @@ interface QuickFixModalProps {
 }
 
 export const QuickFixModal: React.FC<QuickFixModalProps> = ({ item, onClose, onSaveFix }) => {
-  const [newPassword, setNewPassword] = useState('Kp#9v$L8!zQ2wE5m');
+  const [newPassword, setNewPassword] = useState('');
   const [isSaved, setIsSaved] = useState(false);
 
-  if (!item) return null;
-
-  const handleGenerateNew = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+  const handleGenerateNew = useCallback(() => {
+    const passLength = 20;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+~';
+    const array = new Uint32Array(passLength);
+    window.crypto.getRandomValues(array);
     let result = '';
-    for (let i = 0; i < 18; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    for (let i = 0; i < passLength; i++) {
+      result += chars[array[i] % chars.length];
     }
     setNewPassword(result);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (item) {
+      handleGenerateNew();
+      setIsSaved(false);
+    }
+  }, [item, handleGenerateNew]);
+
+  if (!item) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

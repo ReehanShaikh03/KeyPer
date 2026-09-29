@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Shield,
   Key,
@@ -68,7 +68,7 @@ export const VaultPage: React.FC<VaultPageProps> = ({ onLogout }) => {
   };
 
   return (
-    <div className="h-screen w-screen bg-[#0F1115] text-slate-100 flex flex-col font-sans overflow-hidden select-none">
+    <div className="h-screen w-full max-w-full bg-[#0F1115] text-slate-100 flex flex-col font-sans overflow-hidden select-none">
       {/* Top Navbar */}
       <header className="h-14 bg-[#14171F] border-b border-slate-800/80 px-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
@@ -127,53 +127,49 @@ export const VaultPage: React.FC<VaultPageProps> = ({ onLogout }) => {
           </div>
         </aside>
 
-        {/* Main Content Pane with Smooth Page Transition */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 8, scale: 0.995 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.995 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="flex-1 flex overflow-hidden w-full h-full"
-          >
-            {activeTab === 'Security' ? (
-              <SecurityPage
-                onNavigateToVault={(entryId) => {
-                  setSelectedEntryId(entryId);
-                  setActiveTab('Vault');
-                }}
-              />
-            ) : activeTab === 'Settings' ? (
-              <SettingsPage onLogout={onLogout} />
-            ) : activeTab === 'Generator' ? (
-              <GeneratorPage />
-            ) : activeTab === 'Audit log' ? (
-              <AuditPage />
-            ) : (
-              <MobileCascadingVault
-                folders={folders}
-                activeFolder={activeFolder}
-                setActiveFolder={setActiveFolder}
-                addFolder={addFolder}
-                moveEntryToFolder={moveEntryToFolder}
-                folderCounts={folderCounts}
-                entries={entries}
-                selectedEntry={selectedEntry}
-                setSelectedEntryId={setSelectedEntryId}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-                onAddNew={handleAddNew}
-                onEdit={handleEdit}
-                onDelete={deleteEntry}
-                calculateStrength={calculateStrength}
-                isLoading={isLoading}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
+        {/* Main Content Pane */}
+        <div className="flex-1 flex overflow-hidden w-full h-full">
+          {activeTab === 'Security' ? (
+            <SecurityPage
+              onNavigateToVault={(entryId) => {
+                setSelectedEntryId(entryId);
+                const matching = entries.find((e) => e.id === entryId);
+                if (matching) {
+                  setEditingEntry(matching);
+                  setIsModalOpen(true);
+                }
+                setActiveTab('Vault');
+              }}
+            />
+          ) : activeTab === 'Settings' ? (
+            <SettingsPage onLogout={onLogout} />
+          ) : activeTab === 'Generator' ? (
+            <GeneratorPage />
+          ) : activeTab === 'Audit log' ? (
+            <AuditPage />
+          ) : (
+            <MobileCascadingVault
+              folders={folders}
+              activeFolder={activeFolder}
+              setActiveFolder={setActiveFolder}
+              addFolder={addFolder}
+              moveEntryToFolder={moveEntryToFolder}
+              folderCounts={folderCounts}
+              entries={entries}
+              selectedEntry={selectedEntry}
+              setSelectedEntryId={setSelectedEntryId}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              onAddNew={handleAddNew}
+              onEdit={handleEdit}
+              onDelete={deleteEntry}
+              calculateStrength={calculateStrength}
+              isLoading={isLoading}
+            />
+          )}
+        </div>
       </div>
 
       {/* Bottom Floating Mobile Nav Rail */}
