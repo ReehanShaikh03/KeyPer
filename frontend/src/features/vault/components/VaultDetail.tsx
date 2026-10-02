@@ -78,7 +78,7 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
     );
   }
 
-  const { title, category, decryptedData, createdAt, updatedAt, lastUsed } = entry;
+  const { title, category, decryptedData, createdAt, updatedAt } = entry;
   const username = decryptedData.username || 'user@example.com';
   const rawPassword = decryptedData.password;
   const password = rawPassword && rawPassword !== '••••••••••••' ? rawPassword : 'KeyPer#2026!SecuredPass';
@@ -322,25 +322,23 @@ export const VaultDetail: React.FC<VaultDetailProps> = ({
           </div>
 
           {/* Metadata Footer Card */}
-          <div className="bg-[#14171F] border border-slate-800/60 rounded-2xl p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-slate-400">
-            <div>
+          <div className="bg-[#14171F] border border-slate-800/60 rounded-2xl p-5 flex flex-col items-center gap-4 text-xs text-slate-400">
+            <div className="text-center">
               <div className="text-slate-400 font-medium mb-1">Folder</div>
               <div className="font-semibold text-sm text-slate-100">{category}</div>
             </div>
-            <div>
-              <div className="text-slate-400 font-medium mb-1">Last used</div>
-              <div className="font-semibold text-sm text-slate-100">{lastUsed || '4d ago'}</div>
-            </div>
-            <div>
-              <div className="text-slate-400 font-medium mb-1">Last modified</div>
-              <div className="font-semibold text-sm text-slate-100">
-                {new Date(updatedAt).toLocaleDateString()}
+            <div className="w-full grid grid-cols-2 gap-4 text-center border-t border-slate-800/60 pt-4">
+              <div>
+                <div className="text-slate-400 font-medium mb-1">Last modified</div>
+                <div className="font-semibold text-sm text-slate-100">
+                  {new Date(updatedAt).toLocaleDateString()}
+                </div>
               </div>
-            </div>
-            <div>
-              <div className="text-slate-400 font-medium mb-1">Created</div>
-              <div className="font-semibold text-sm text-slate-100">
-                {new Date(createdAt).toLocaleDateString()}
+              <div>
+                <div className="text-slate-400 font-medium mb-1">Created</div>
+                <div className="font-semibold text-sm text-slate-100">
+                  {new Date(createdAt).toLocaleDateString()}
+                </div>
               </div>
             </div>
           </div>
