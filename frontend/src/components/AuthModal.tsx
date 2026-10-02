@@ -159,7 +159,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'sig
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={mode === '2fa' ? undefined : onClose}
             style={{
               position: 'absolute',
               top: 0,
@@ -168,7 +168,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'sig
               bottom: 0,
               background: 'rgba(5, 7, 12, 0.85)',
               backdropFilter: 'blur(16px)',
-              cursor: 'pointer',
+              cursor: mode === '2fa' ? 'default' : 'pointer',
             }}
           />
 
@@ -186,34 +186,36 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'sig
               background: '#0d101a',
               border: '1px solid rgba(168, 85, 247, 0.25)',
               borderRadius: '24px',
-              padding: '36px 32px',
+              padding: '24px 20px',
               boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(168, 85, 247, 0.15)',
               zIndex: 10000,
             }}
           >
             {/* Close button */}
-            <motion.button
-              whileHover={{ scale: 1.1, rotate: 90 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={onClose}
-              style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '50%',
-                width: '34px',
-                height: '34px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#94a3b8',
-                cursor: 'pointer',
-              }}
-            >
-              <X size={18} />
-            </motion.button>
+            {mode !== '2fa' && (
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onClose}
+                style={{
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '50%',
+                  width: '34px',
+                  height: '34px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                }}
+              >
+                <X size={18} />
+              </motion.button>
+            )}
 
             {mode === '2fa' ? (
               <TwoFactorVerify

@@ -163,7 +163,7 @@ export const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = ({
       <motion.div
         animate={isShaking ? { x: [-8, 8, -6, 6, -3, 3, 0] } : { x: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-md bg-[#1A1D24] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden space-y-6 text-center"
+        className="w-full max-w-md bg-[#1A1D24] border border-white/10 rounded-3xl p-3 sm:p-8 shadow-2xl relative overflow-hidden space-y-6 text-center"
       >
         {/* Ambient Top Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-2 bg-gradient-to-r from-transparent via-[#6366F1] to-transparent blur-xs opacity-75" />
@@ -219,7 +219,7 @@ export const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = ({
         </AnimatePresence>
 
         {/* 6-Digit Single Input Boxes */}
-        <div className="flex items-center justify-center gap-2 sm:gap-2.5 my-2">
+        <div className="flex items-center justify-center gap-1 sm:gap-2.5 my-2">
           {digits.map((digit, index) => {
             const isFilled = Boolean(digit);
             return (
@@ -250,7 +250,7 @@ export const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = ({
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   onPaste={handlePaste}
                   disabled={loading || isSuccessWave}
-                  className={`w-11 h-14 sm:w-12 sm:h-14 text-center font-mono text-xl font-bold rounded-2xl bg-[#0F1115] border transition-all duration-200 outline-none ${
+                  className={`w-8 h-10 sm:w-12 sm:h-14 text-center font-mono text-lg sm:text-xl font-bold rounded-xl sm:rounded-2xl bg-[#0F1115] border transition-all duration-200 outline-none ${
                     isSuccessWave
                       ? 'border-emerald-500 text-emerald-300 shadow-lg shadow-emerald-900/40'
                       : isFilled
